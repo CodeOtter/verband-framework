@@ -1,0 +1,7 @@
+{
+    "name": "verband/framework",
+    "description": "The Verband Framework",
+    "require": {
+        "verband/application": "dev-master"
+    }
+}
