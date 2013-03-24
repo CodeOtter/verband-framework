@@ -42,8 +42,12 @@ class Autoloader {
 	 */
 	public function findFileByClassname($className) {
 		foreach($this->paths as $index => $path) {
-			if(substr($className, 0, strlen($index)) == $index) {
-				return $this->paths[$index].'/'.$className;
+			if(substr($className, 0, strlen($index))) == $index) {
+				$parts = explode('\\', $className);
+				$parts[0] = strtolower($parts[0]);
+				$parts[1] = strtolower($parts[1]);
+				$classPath = implode('/', $parts);
+				return $path . '/' . implode('/', $parts);
 			}
 		}
 		return $className;
