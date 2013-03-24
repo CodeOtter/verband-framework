@@ -1,7 +1,10 @@
 {
     "name": "Verband/Framework",
-    "type": "verband-framework",
+    "type": "verband-component",
     "description": "The Verband Framework",
     "require": {
+    },
+    "extra": {
+        "package-path": "Framework"
     }
 }
