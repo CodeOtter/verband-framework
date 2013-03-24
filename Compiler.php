@@ -1,6 +1,6 @@
 <?php
 
-namespace Framework;
+namespace Verband\Framework;
 
 class Compiler {
 
@@ -113,7 +113,7 @@ class Compiler {
 		}
 
 		$phar = new \Phar($this->filename);
-		$phar->setStub($this->targetDirectory . '/Application/Stub.php');
+		$phar->setStub($this->targetDirectory . '/application/Stub.php');
 		exit;
 
 		if($privateKeyPath !== null && !file_exists($privateKeyPath)) {

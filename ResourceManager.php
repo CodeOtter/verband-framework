@@ -1,8 +1,8 @@
 <?php 
 
-namespace Framework;
+namespace Verband\Framework;
 
-use Framework\Util\Nomenclature;
+use Verband\Framework\Util\Nomenclature;
 
 use CodeOtter\Rest\Http\Request;
 
@@ -45,10 +45,10 @@ class ResourceManager {
 		}
 
 		$pathAsNamespace = substr(Nomenclature::pathToNamespace($file), 1);
-		$vendorAndPackage = Nomenclature::getVendorAndPackage($pathAsNamespace);
+		$vendorAndPackage = strtolower(Nomenclature::getVendorAndPackage($pathAsNamespace));
 		$fileRequest = substr($file, strlen($vendorAndPackage) + 2);
 
-		if($result = $this->getResource($this->applicationRoot . '/Public/' . $fileRequest)) {
+		if($result = $this->getResource($this->applicationRoot . '/application/Public/' . $fileRequest)) {
 			return $result;
 		}
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Framework\Caching;
+namespace Verband\Framework\Caching;
 
 /**
  * Probably should be an interface

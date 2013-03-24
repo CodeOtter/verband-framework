@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Framework\Http;
+namespace Verband\Framework\Http;
 
 /**
  * ServerBag is a container for HTTP headers from the $_SERVER variable.

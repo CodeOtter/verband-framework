@@ -1,0 +1,4 @@
+<?xml version="1.0" ?> 
+<package name="Verband\Framework">
+	<process name="Initialization" />
+</package>

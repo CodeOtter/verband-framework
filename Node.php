@@ -1,6 +1,6 @@
 <?php 
 
-namespace Framework;
+namespace Verband\Framework;
 
 /**
  * A node of a tree structure.

@@ -1,8 +1,8 @@
 <?php
 
-namespace Framework\Caching;
+namespace Verband\Framework\Caching;
 
-use Framework\Compiler;
+use Verband\Framework\Compiler;
 
 class PhpCache extends Cache {
 	

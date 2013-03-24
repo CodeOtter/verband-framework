@@ -1,18 +1,17 @@
 <?php
 
-namespace Framework;
-
-use Framework\Caching\PhpCache;
+namespace Verband\Framework;
 
 require(__DIR__ . '/Autoloader.php');
 
-use Framework\Autoloader;
-use Framework\Context;
-use Framework\Http\ResourceResponse;
-use Framework\Http\Request;
-use Framework\Http\ParameterBag;
-use Framework\Caching\FileCache;
-use Framework\Util\Nomenclature;
+use Verband\Framework\Caching\PhpCache;
+use Verband\Framework\Http\ResourceResponse;
+use Verband\Framework\Http\Request;
+use Verband\Framework\Http\ParameterBag;
+use Verband\Framework\Caching\FileCache;
+use Verband\Framework\Util\Nomenclature;
+use Verband\Framework\Process\Initialization;
+
 /**
  * This is the core of the Verband Framework.  This contains the autoloader, the path configuration, 
  * the packages, and the context tree.
@@ -20,9 +19,9 @@ use Framework\Util\Nomenclature;
 class Core {
 
 	const
-		PATH_ROOT				= 'Root',
-		PATH_PACKAGES			= 'Packages',
-		PATH_APPLICATION		= 'Application',
+		PATH_ROOT				= 'root',
+		PATH_PACKAGES			= 'packages',
+		PATH_APPLICATION		= 'application',
 		PATH_CACHE				= 'Cache',
 		PATH_LOGS				= 'Logs',
 		PATH_ORM_SETTINGS		= '/Settings/orms',
@@ -117,16 +116,18 @@ class Core {
 
 			// Initialize the autoloader
 			$this->autoloader = new Autoloader($this->paths[self::PATH_ROOT]);
-			
+			$this->autoloader->setPath('Verband\Framework', $this->paths[self::PATH_PACKAGES]);
+			$this->autoloader->setPath('Symfony\Component', $this->paths[self::PATH_PACKAGES] . '/{composer}/{Vendor}/Component/{2}');
+
 			// Initalize Cache
 			FileCache::setCacheFile($this->getPath(self::PATH_CACHE) . '/verband.cache');
 
 			// Load the core package
-			$corePackage = 'Verband\Core';
-			$this->loadPackage($this->paths[self::PATH_PACKAGES], $corePackage);
+			//$corePackage = 'Verband\Core';
+			//$this->loadPackage($this->paths[self::PATH_PACKAGES], $corePackage);
 
 			// initialize contexts
-			$this->contexts = new Context($corePackage, null, new \Verband\Core\Process\Initialization());
+			$this->contexts = new Context('Verband\Framework', null, new Initialization());
 			$this->contexts->setState('framework', $this);	
 
 			// Initialize settings
@@ -141,7 +142,7 @@ class Core {
 			if($this->resourceManager->isResource($file)) {
 				// Attach a context to handle files
 				$contents = $this->resourceManager->get($file);
-				$this->contexts->addChild(new Context('Verband\ResourceManager', null, function($context, $lastResult) use($file, $contents) {
+				$this->contexts->addChild(new Context('Verband\Framework\ResourceManager', null, function($context, $lastResult) use($file, $contents) {
 					$response = new ResourceResponse($file, $contents);
 					$response->send();
 				}));
@@ -153,7 +154,7 @@ class Core {
 			$this->loadPackages();
 
 			// Load the application package
-			$this->loadPackage($this->paths[self::PATH_ROOT], 'Application');
+			$this->loadPackage($this->paths[self::PATH_ROOT], 'application');
 
 			// Initialize the packages
 			$this->intializePackages();
@@ -248,7 +249,7 @@ class Core {
 	public function runWorkflow() {
 		// Assemble the workflow
 		$workflow = new Workflow($this);
-		$this->contexts->addChild($workflow->assemble($workflow->gather($this->getPackage('Application'))));
+		$this->contexts->addChild($workflow->assemble($workflow->gather($this->getPackage(self::PATH_APPLICATION))));
 
 		$this->executeWorkflow();
 	}
@@ -270,7 +271,7 @@ class Core {
 
 		try {
 			$result = $context->run($lastResult);
-		} catch(\Framework\Exceptions\ProcessHaltException $e) {
+		} catch(\Verband\Framework\Exceptions\ProcessHaltException $e) {
 			// This process tree is terminated, end it now
 			return;
 		} catch(\Exception $e) {
@@ -333,14 +334,15 @@ class Core {
 	
 	/**
 	 * Establishes the paths to framework components.
+	 * @TODO: Make this part of settings?
 	 * @return	void
 	 */
 	private function initializePaths() {
-		$this->paths[self::PATH_ROOT]			= realpath(__DIR__ . '/..');
-		$this->paths[self::PATH_APPLICATION]	= $this->paths[self::PATH_ROOT] . '/Application';
-		$this->paths[self::PATH_CACHE]			= $this->paths[self::PATH_ROOT] . '/Application/Cache';
-		$this->paths[self::PATH_LOGS]			= $this->paths[self::PATH_ROOT] . '/Application/Logs';
-		$this->paths[self::PATH_PACKAGES]		= $this->paths[self::PATH_ROOT] . '/Packages';
+		$this->paths[self::PATH_ROOT]			= realpath(__DIR__ . '/../../..');
+		$this->paths[self::PATH_APPLICATION]	= $this->paths[self::PATH_ROOT] . '/application';
+		$this->paths[self::PATH_CACHE]			= $this->paths[self::PATH_ROOT] . '/application/Cache';
+		$this->paths[self::PATH_LOGS]			= $this->paths[self::PATH_ROOT] . '/application/Logs';
+		$this->paths[self::PATH_PACKAGES]		= $this->paths[self::PATH_ROOT] . '/packages';
 	}
 
 	/**
@@ -351,22 +353,17 @@ class Core {
 		$vendors = array_diff(scandir($this->paths[self::PATH_PACKAGES]), array('..', '.'));
 
 		foreach($vendors as $vendor) {
-			if(is_dir($this->paths['Packages'] . '/' . $vendor)) {
-				if(file_exists($this->paths['Packages'] . '/'. $vendor . '/Startup.php')) {
-					// Package is one directory deep
-					$this->loadPackage($this->paths[self::PATH_PACKAGES], $vendor);
-				} else {
-					// Package is traditional setup
-					$packages = array_diff(scandir($this->paths['Packages'] . '/' . $vendor), array('..', '.'));
-					foreach($packages as $package) {
-						if(($vendor != 'Verband' && $package != 'Core') && is_dir($this->paths['Packages'] . '/' . $vendor . '/' . $package)) {
-							$this->loadPackage($this->paths[self::PATH_PACKAGES], $vendor.'\\'.$package);
-						}
+			if(is_dir($this->paths[self::PATH_PACKAGES] . '/' . $vendor)) {
+				$packages = array_diff(scandir($this->paths[self::PATH_PACKAGES] . '/' . $vendor), array('..', '.'));
+				foreach($packages as $package) {
+					if(is_dir($this->paths[self::PATH_PACKAGES] . '/' . $vendor . '/' . $package)) {
+						$this->loadPackage($this->paths[self::PATH_PACKAGES], $vendor.'\\'.$package);
 					}
 				}
 			}
 		}
 	}
+
 	
 	/**
 	 * Loads a context into the framework.
@@ -374,19 +371,23 @@ class Core {
 	 */
 	private function loadPackage($pathPrefix, $name) {
 		$path = $pathPrefix . '/' . Nomenclature::toPath($name);
-		require($path . '/Startup.php');
-		$packageName = '\\' . $name . '\Startup';
-		$package = new $packageName($path);
-		$this->packages[$name] = $package;
-		$package->registerNamespaces($this->autoloader, $this->contexts, $this->getPath(self::PATH_PACKAGES));
-		return $package;
+		if(file_exists($path . '/Startup.php')) {
+			$packageName = '\\' . $name . '\Startup';
+			$package = new $packageName($path);
+			if($package instanceof Package) {
+				$this->packages[$name] = $package;
+				$package->registerNamespaces($this->autoloader, $this->contexts, $this->getPath(self::PATH_PACKAGES));
+				return $package;
+			}
+		}
+		return null;
 	}
 
 	/**
 	 * If a environment specific configuration was not determined, default to the catch all
 	 * @param unknown_type $package
 	 */
-	private function initializePackageConfiguration($package) {
+	private function initializePackageConfiguration(Package $package) {
 		$settingsFilename = $package->getDirectory() + '/Settings/config.' . $this->getEnvironment() . '.yml';
 		if(!file_exists($settingsFilename)) {
 			$settingsFilename = $package->getDirectory() . '/Settings/config.yml';
@@ -401,8 +402,6 @@ class Core {
 	 * @return void
 	 */
 	private function intializePackages() {
-		// Gather all contexts from all applications
-
 		foreach($this->packages as $package) {
 			// Load a packages settings
 			$this->initializePackageConfiguration($package);

@@ -1,11 +1,11 @@
 <?php 
 
-namespace Framework;
+namespace Verband\Framework;
 
 /**
  * An Package contains a Context tree that is integrated into the Framework's process flow.  
  */
-use Framework\Util\Nomenclature;
+use Verband\Framework\Util\Nomenclature;
 
 abstract class Package {
 
@@ -54,21 +54,11 @@ abstract class Package {
 	 * Registers custom namespaces
 	 */
 	public function registerNamespaces($autoloader, $contexts, $packagePath) {
-		//$autoloader = $contexts->getState('framework')->getAutoloader();
-		
 		foreach($this->getNamespaces($contexts) as $namespace => $path) {
 			$autoloader->setPath($namespace, $path);
 		}
 
-		$packageName = Nomenclature::getVendorAndPackage($this);
-		$packageParts = explode('\\', $packageName);
-		
-		if($packageParts[1] == 'Startup') {
-			// Dealing with a one-dimensional deep package
-			$packageName = $packageParts[0];
-		}
-
-		$autoloader->setPath($packageName, $packagePath);
+		$autoloader->setPath(Nomenclature::getVendorAndPackage($this), $packagePath);
 	}
 
 	/**

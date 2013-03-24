@@ -1,8 +1,8 @@
 <?php 
 
-namespace Framework\Http;
+namespace Verband\Framework\Http;
 
-use Framework\Util\MimeType;
+use Verband\Framework\Util\MimeType;
 
 /**
  * Response represents an HTTP response.

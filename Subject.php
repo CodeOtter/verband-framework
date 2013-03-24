@@ -1,12 +1,10 @@
 <?php
 
-namespace Framework;
+namespace Verband\Framework;
 
-use Framework\Util\MimeType;
-
-use Framework\Util\Nomenclature;
-
-use Framework\Http\Response;
+use Verband\Framework\Util\MimeType;
+use Verband\Framework\Util\Nomenclature;
+use Verband\Framework\Http\Response;
 
 /**
  * Converts a class into a Subject, which allows access to common developer methods.

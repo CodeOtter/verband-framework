@@ -1,6 +1,6 @@
 <?php
 
-namespace Framework\Util;
+namespace Verband\Framework\Util;
 
 class MimeType {
 	

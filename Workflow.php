@@ -1,14 +1,14 @@
 <?php 
 
-namespace Framework;
+namespace Verband\Framework;
 
-use Framework\Util\Nomenclature;
+use Verband\Framework\Util\Nomenclature;
 
 /**
  * The Workflow component reads the Workflow.xml files in every package and converts it into a chain of Contexts.
  * The following XML structure is a detailed example of all valid node configurations.
  * <application>
- *   <package name="Verband\Core">
+ *   <package name="Verband\Framework">
  *     <process name="Initialize">
  *     <after process="Initialize" inject="Doctrine\Processes\Initialize">
  *     <after process="Doctrine\Processe\Initialize">
@@ -35,7 +35,7 @@ class Workflow {
 	
 	private
 		/**
-		 * @var Framework\Core
+		 * @var Verband\Framework\Core
 		 */
 		$framework = null,
 
@@ -50,15 +50,15 @@ class Workflow {
 	 * @throws	\Exception
 	 * @return	void
 	 */
-	public function __construct(\Framework\Core $framework) {
+	public function __construct(Core $framework) {
 		$this->framework = $framework;
 	 } 
 
 	 /**
 	  * Assembles an Application's workflow.
 	  * Enter description here ...
-	  * @param	\Framework\Package		$package
-	  * @param	\Framework\Context		$context
+	  * @param	\Verband\Framework\Package		$package
+	  * @param	\Verband\Framework\Context		$context
 	  * @throws \Exception
 	  * @return	\Framework\Context
 	  */
@@ -93,7 +93,7 @@ class Workflow {
 
 	 /**
 	  * Gets the Workflow XML of an package.
-	  * @param \Framework\Package $package
+	  * @param \Verband\Framework\Package $package
 	  * @return \SimpleXMLElement
 	  */
 	 public function getXml($package) {
@@ -113,7 +113,7 @@ class Workflow {
 	  * Gets an Package from an XML Node 
 	  * @param	\SimpleXMLElement
 	  * @throws \Exception
-	  * @return	\Framework\Package
+	  * @return	 \Verband\Framework\Package
 	  */
 	 protected function getPackage($node) {
 	 	if(!($node instanceof \SimpleXMLElement)) {
@@ -142,8 +142,8 @@ class Workflow {
 	 /**
 	  * Formats a process name into a fuly-qualified class name
 	  * @param	String	Process name
-	  * @param	\Framework\Package	The package that owns the process
-	  * @return	String
+	  * @param	\Verband\Framework\Package	The package that owns the process
+	  * @return	 String
 	  */
 	 protected function getProcessName($name, $parentPackage = null) {
 	 	if(strpos($name, '\\') === false) {
@@ -152,12 +152,6 @@ class Workflow {
 	 		}
 	 		
 	 		$packageName = $parentPackage->getName();
-	 		$packageParts = explode('\\', $packageName);
-	 		
-	 		if($packageParts[1] == 'Startup') {
-	 			// Dealing with a one-dimensional deep package
-	 			$packageName = $packageParts[0];
-	 		}
 
 	 		return $packageName . '\\Process\\' . $name;
 	 	}
@@ -176,7 +170,7 @@ class Workflow {
 	 /**
 	  * Handles the Applications node and converts it to a chain of contexts.
 	  * @param	\SimpleEXMLElement
-	  * @return	Array
+	  * @return 	Array
 	  */
 	 protected function handleApplicationNode($node) {
 	 	$result = array();
@@ -196,7 +190,7 @@ class Workflow {
 	 /**
 	  * Handles an Package node and converts it to a chain of contexts.
 	  * @param	\SimpleEXMLElement
-	  * @return	Array
+	  * @return	 Array
 	  */
 	 protected function handlePackageNode($node) {
 
@@ -240,7 +234,7 @@ class Workflow {
 	 /**
 	  * Handles a Process node and converts it to a chain of contexts.
 	  * @param	\SimpleEXMLElement
-	  * @return	Array
+	  * @return 	Array
 	  */
 	 protected function handleProcessNode($node) {
 	 	$parent = $this->getPackage($this->getParentNode($node));
@@ -290,7 +284,7 @@ class Workflow {
  			$result = array(new Context($inject, $parent, $injectObject));
  		} else {
  			// Dealing with an package
- 			$injectObject = new $injectClass($this->framework->getPath('Packages') . '/' . Nomenclature::toPath(Nomenclature::getVendorAndPackage($injectClass)));
+ 			$injectObject = new $injectClass($this->framework->getPath(Core::PATH_PACKAGES) . '/' . Nomenclature::toPath(Nomenclature::getVendorAndPackage($injectClass)));
  			$workflow = new Workflow($this->framework);
  			$result = $workflow->gather($injectObject);
  			
@@ -362,7 +356,7 @@ class Workflow {
 
 	 /**
 	  * Gets the last context the packages process has set.
-	  * @return	\Framework\Context
+	  * @return	\Verband\Framework\Context
 	  */
 	 protected function getFramework() {
 	 	return $this->framework;

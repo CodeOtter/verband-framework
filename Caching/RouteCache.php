@@ -1,6 +1,6 @@
 <?php
 
-namespace Framework\Caching;
+namespace Verband\Framework\Caching;
 
 class RouteCache extends FileCache {
 	

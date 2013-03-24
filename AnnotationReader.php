@@ -1,7 +1,6 @@
 <?php 
 
-namespace Framework;
-
+namespace Verband\Framework;
 
 /**
  * Extracts the annotation from a class, method, or function.

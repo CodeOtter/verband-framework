@@ -1,6 +1,7 @@
 <?php
 
-namespace Framework\Exceptions;
+namespace Verband\Framework\Exceptions;
+
 /**
  * Define a custom exception class
  */

@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Framework\Http;
+namespace Verband\Framework\Http;
 
 /**
  * FileBag is a container for HTTP headers.
