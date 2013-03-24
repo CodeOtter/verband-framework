@@ -1,5 +1,5 @@
 {
-    "name": "Verband/Framework",
+    "name": "verband/framework",
     "type": "verband-component",
     "description": "The Verband Framework",
     "require": {
