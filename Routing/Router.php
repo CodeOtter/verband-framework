@@ -1,6 +1,6 @@
 <?php 
 
-namespace Verband\Framework;
+namespace Verband\Framework\Routing;
 
 use Verband\Framework\Util\Nomenclature;
 
@@ -12,7 +12,7 @@ use CodeOtter\Rest\Http\Request;
  * @author 12dCode
  *
  */
-class ResourceManager {
+class Router {
 
 	private $applicationRoot;
 
@@ -50,6 +50,7 @@ class ResourceManager {
 		}
 
 		if($result = $this->getResource($this->applicationRoot . '/application/Public' . $file)) {
+			// @TODO: Set path caching here
 			return $result;
 		}
 

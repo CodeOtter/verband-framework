@@ -1,6 +1,6 @@
 <?php
 
-namespace Verband\Framework;
+namespace Verband\Framework\Structure;
 
 use Symfony\Component\Yaml\Yaml;
 

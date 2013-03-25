@@ -1,6 +1,6 @@
 <?php 
 
-namespace Verband\Framework;
+namespace Verband\Framework\Structure;
 
 /**
  * Establishes the same autoloading methodology as Symfony (PSR-0)

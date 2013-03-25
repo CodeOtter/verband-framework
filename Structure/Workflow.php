@@ -1,8 +1,9 @@
 <?php 
 
-namespace Verband\Framework;
+namespace Verband\Framework\Structure;
 
 use Verband\Framework\Util\Nomenclature;
+use Verband\Framework\Core;
 
 /**
  * The Workflow component reads the Workflow.xml files in every package and converts it into a chain of Contexts.

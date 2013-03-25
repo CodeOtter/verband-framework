@@ -1,6 +1,6 @@
 <?php 
 
-namespace Verband\Framework;
+namespace Verband\Framework\Structure;
 
 /**
  * An Package contains a Context tree that is integrated into the Framework's process flow.  
@@ -53,12 +53,12 @@ abstract class Package {
 	/**
 	 * Registers custom namespaces
 	 */
-	public function registerNamespaces($autoloader, $contexts, $packagePath) {
-		foreach($this->getNamespaces($contexts) as $namespace => $path) {
+	public function registerNamespaces($autoloader, $packagesPath) {
+		foreach($this->getNamespaces($packagesPath) as $namespace => $path) {
 			$autoloader->setPath($namespace, $path);
 		}
 
-		$autoloader->setPath(Nomenclature::getVendorAndPackage($this), $packagePath);
+		$autoloader->setPath(Nomenclature::getVendorAndPackage($this), $packagesPath);
 	}
 
 	/**

@@ -1,6 +1,6 @@
 <?php 
 
-namespace Verband\Framework;
+namespace Verband\Framework\Structure;
 
 /**
  * A Process is a functional monad.  The Process is aware of what Context it is in when it executes.

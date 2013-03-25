@@ -2,15 +2,22 @@
 
 namespace Verband\Framework;
 
-require(__DIR__ . '/Autoloader.php');
+require(__DIR__ . '/Structure/Autoloader.php');
 
 use Verband\Framework\Caching\PhpCache;
 use Verband\Framework\Http\ResourceResponse;
-use Verband\Framework\Http\Request;
 use Verband\Framework\Http\ParameterBag;
 use Verband\Framework\Caching\FileCache;
-use Verband\Framework\Util\Nomenclature;
 use Verband\Framework\Process\Initialization;
+use Verband\Framework\Structure\Autoloader;
+use Verband\Framework\Structure\Context;
+use Verband\Framework\Structure\Process;
+use Verband\Framework\Structure\Package;
+use Verband\Framework\Structure\Settings;
+use Verband\Framework\Structure\Workflow;
+use Verband\Framework\Structure\Autloader;
+use Verband\Framework\Exceptions\ProcessHaltException;
+use Verband\Framework\Exceptions\ApplicationHaltException;
 
 /**
  * This is the core of the Verband Framework.  This contains the autoloader, the path configuration, 
@@ -71,19 +78,6 @@ class Core {
 	private $settings = array();
 
 	/**
-	 * Resource manager
-	 * @var unknown_type
-	 */
-	private $resourceManager = null;
-
-	/**
-	 * 
-	 * Enter description here ...
-	 * @var unknown_type
-	 */
-	private $request = null;
-
-	/**
 	 * Framework initialization.
 	 * @return	void
 	 */
@@ -117,14 +111,12 @@ class Core {
 			// Initialize the autoloader
 			$this->autoloader = new Autoloader($this->paths[self::PATH_ROOT]);
 			$this->autoloader->setPath('Verband\Framework', $this->paths[self::PATH_PACKAGES]);
-			$this->autoloader->setPath('Symfony\Component', $this->paths[self::PATH_PACKAGES] . '/{first.lc}/{2.lc}/{first}/Component/{>1}');
 
-			// Initalize Cache
-			FileCache::setCacheFile($this->getPath(self::PATH_CACHE) . '/verband.cache');
+			// Load the Framework Package
+			$this->loadPackage('Verband\Framework',$this->paths[self::PATH_PACKAGES]);
 
-			// Load the core package
-			//$corePackage = 'Verband\Core';
-			//$this->loadPackage($this->paths[self::PATH_PACKAGES], $corePackage);
+			//$this->autoloader->setPath('Verband\Framework', $this->paths[self::PATH_PACKAGES]);
+			//$this->autoloader->setPath('Symfony\Component', $this->paths[self::PATH_PACKAGES] . '/{first.lc}/{2.lc}/{first}/Component/{>1}');
 
 			// initialize contexts
 			$this->contexts = new Context('Verband\Framework', null, new Initialization());
@@ -135,27 +127,11 @@ class Core {
 			$settings = new Settings($this->paths[self::PATH_APPLICATION] . '/Settings/config.yml');
 			$this->settings->add($settings->getContents());
 
-			// Check if we are dealing with a resource
-			$this->request = Request::createFromGlobals();
-			$this->resourceManager = new ResourceManager($this->paths[self::PATH_ROOT]);
-
-			if($this->resourceManager->isResource($this->request)) {
-				// Attach a context to handle files
-				$file = $this->request->getRequestUri();
-				$contents = $this->resourceManager->get($file);
-				$this->contexts->addChild(new Context('Verband\Framework\ResourceManager', null, function($context, $lastResult) use($file, $contents) {
-					$response = new ResourceResponse($file, $contents);
-					$response->send();
-				}));
-				$this->executeWorkflow();
-				exit;
-			}
-
 			// Initialize the 3rd party packages
 			$this->loadPackages();
 
 			// Load the application package
-			$this->loadPackage($this->paths[self::PATH_ROOT], 'application');
+			$this->loadPackage('application', $this->paths[self::PATH_ROOT]);
 
 			// Initialize the packages
 			$this->intializePackages();
@@ -266,16 +242,15 @@ class Core {
 		if($context === null) {
 			$context = $this->contexts;
 		}
-	
-		if($lastResult === null) {
-			$lastResult = $this->request;
-		}
 
 		try {
 			$result = $context->run($lastResult);
-		} catch(\Verband\Framework\Exceptions\ProcessHaltException $e) {
+		} catch(ProcessHaltException $e) {
 			// This process tree is terminated, end it now
 			return;
+		} catch(ApplicationHaltException $e) {
+			// This application is finished
+			exit;
 		} catch(\Exception $e) {
 			echo $e->getMessage() . "\n";
 			echo $e->getTraceAsString() . "\n";
@@ -359,28 +334,39 @@ class Core {
 				$packages = array_diff(scandir($this->paths[self::PATH_PACKAGES] . '/' . $vendor), array('..', '.'));
 				foreach($packages as $package) {
 					if(is_dir($this->paths[self::PATH_PACKAGES] . '/' . $vendor . '/' . $package)) {
-						$this->loadPackage($this->paths[self::PATH_PACKAGES], $vendor.'\\'.$package);
+						$this->loadPackage($vendor.'\\'.$package, $this->paths[self::PATH_PACKAGES]);
 					}
 				}
 			}
 		}
 	}
 
-	
+	/**
+	 * 
+	 * Enter description here ...
+	 * @param unknown_type $name
+	 * @param unknown_type $package
+	 */
+	public function setPackage($name, $package) {
+		$this->packages[strtolower($name)] = $package;
+		return $this;
+	}
+
 	/**
 	 * Loads a context into the framework.
 	 * @param $packageName
 	 */
-	private function loadPackage($pathPrefix, $name) {
-		$path = $pathPrefix . '/' . Nomenclature::toPath($name);
+	private function loadPackage($name, $pathPrefix) {
+		$name = strtolower($name);
+		$path = $pathPrefix . '/' . str_replace('\\', '/', $name);
 		if(file_exists($path . '/Startup.php')) {
 			require_once($path . '/Startup.php');
 			//$this->autoloader->setPath($name, $this->getPath(self::PATH_PACKAGES));
 			$packageName = '\\' . $name . '\Startup';
 			$package = new $packageName($path);
 			if($package instanceof Package) {
-				$this->packages[strtolower($name)] = $package;
-				$package->registerNamespaces($this->autoloader, $this->contexts, $this->getPath(self::PATH_PACKAGES));
+				$this->setPackage($name, $package);
+				$package->registerNamespaces($this->autoloader, $this->getPath(self::PATH_PACKAGES));
 				return $package;
 			}
 		}

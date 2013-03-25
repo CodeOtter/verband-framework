@@ -1,10 +1,12 @@
 <?php
 
-namespace Verband\Framework;
+namespace Verband\Framework\Structure;
 
 use Verband\Framework\Util\MimeType;
 use Verband\Framework\Util\Nomenclature;
 use Verband\Framework\Http\Response;
+use Verband\Framework\Core;
+use Verband\Framework\Util\AnnotationReader;
 
 /**
  * Converts a class into a Subject, which allows access to common developer methods.

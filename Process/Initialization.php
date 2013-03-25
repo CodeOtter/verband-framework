@@ -2,8 +2,10 @@
 
 namespace Verband\Framework\Process;
 
-use Verband\Framework\Process;
-use Verband\Framework\Context;
+use Verband\Framework\Core;
+use Verband\Framework\Caching\FileCache;
+use Verband\Framework\Structure\Process;
+use Verband\Framework\Structure\Context;
 
 /**
  * Transforms the body of a request based on the Content-Type and Accept headers.
@@ -24,6 +26,8 @@ class Initialization implements Process {
 	 * @return	mixed
 	 */
 	public function execute(Context $context, $lastResult) {
+		// Establish caching
+		FileCache::setCacheFile($context->getState('framework')->getPath(Core::PATH_CACHE) . '/verband.cache');
 		return $lastResult;
 	}
 }

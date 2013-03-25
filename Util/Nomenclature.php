@@ -2,11 +2,11 @@
 
 namespace Verband\Framework\Util;
 
+use Verband\Framework\Core;
+
 /**
  * Pluralize support from https://raw.github.com/FriendsOfSymfony/FOSRestBundle/master/Util/Pluralization.php
  */
-use Verband\Framework\Core;
-
 class Nomenclature {
 
 	/**

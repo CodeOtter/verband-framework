@@ -1,6 +1,6 @@
 <?php 
 
-namespace Verband\Framework;
+namespace Verband\Framework\Structure;
 
 /**
  * A Context is a tree node that contains a Process.  When the Process is executed, the result will be

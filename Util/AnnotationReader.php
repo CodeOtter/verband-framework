@@ -1,6 +1,6 @@
 <?php 
 
-namespace Verband\Framework;
+namespace Verband\Framework\Util;
 
 /**
  * Extracts the annotation from a class, method, or function.
