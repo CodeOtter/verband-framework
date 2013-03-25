@@ -117,7 +117,7 @@ class Core {
 			// Initialize the autoloader
 			$this->autoloader = new Autoloader($this->paths[self::PATH_ROOT]);
 			$this->autoloader->setPath('Verband\Framework', $this->paths[self::PATH_PACKAGES]);
-			$this->autoloader->setPath('Symfony\Component', $this->paths[self::PATH_PACKAGES] . '/{composer}/{Vendor}/Component/{2}');
+			$this->autoloader->setPath('Symfony\Component', $this->paths[self::PATH_PACKAGES] . '/{first.lc}/{2.lc}/{first}/Component/{>1}');
 
 			// Initalize Cache
 			FileCache::setCacheFile($this->getPath(self::PATH_CACHE) . '/verband.cache');
@@ -138,9 +138,10 @@ class Core {
 			// Check if we are dealing with a resource
 			$this->request = Request::createFromGlobals();
 			$this->resourceManager = new ResourceManager($this->paths[self::PATH_ROOT]);
-			$file = $this->request->getRequestUri();
-			if($this->resourceManager->isResource($file)) {
+
+			if($this->resourceManager->isResource($this->request)) {
 				// Attach a context to handle files
+				$file = $this->request->getRequestUri();
 				$contents = $this->resourceManager->get($file);
 				$this->contexts->addChild(new Context('Verband\Framework\ResourceManager', null, function($context, $lastResult) use($file, $contents) {
 					$response = new ResourceResponse($file, $contents);
@@ -192,6 +193,7 @@ class Core {
 	 * @return Package
 	 */
 	public function getPackage($packageName) {
+		$packageName = strtolower($packageName);
 		if(isset($this->packages[$packageName])) {
 			return $this->packages[$packageName];
 		} else {
@@ -372,10 +374,12 @@ class Core {
 	private function loadPackage($pathPrefix, $name) {
 		$path = $pathPrefix . '/' . Nomenclature::toPath($name);
 		if(file_exists($path . '/Startup.php')) {
+			require_once($path . '/Startup.php');
+			//$this->autoloader->setPath($name, $this->getPath(self::PATH_PACKAGES));
 			$packageName = '\\' . $name . '\Startup';
 			$package = new $packageName($path);
 			if($package instanceof Package) {
-				$this->packages[$name] = $package;
+				$this->packages[strtolower($name)] = $package;
 				$package->registerNamespaces($this->autoloader, $this->contexts, $this->getPath(self::PATH_PACKAGES));
 				return $package;
 			}

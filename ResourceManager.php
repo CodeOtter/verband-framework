@@ -29,8 +29,9 @@ class ResourceManager {
 	 * Enter description here ...
 	 * @param unknown_type $request
 	 */
-	public function isResource($filepath) {
-		return strlen(pathinfo($filepath, PATHINFO_EXTENSION)) > 0;
+	public function isResource($request) {
+		$uri = $request->getRequestUri();
+		return strlen(pathinfo($uri, PATHINFO_EXTENSION)) > 0 || ($uri == '/' && in_array('text/html', $request->getAcceptableContentTypes()));
 	}
 
 	/**
@@ -44,18 +45,23 @@ class ResourceManager {
 			$file = str_replace('..', ''. $file);
 		}
 
-		$pathAsNamespace = substr(Nomenclature::pathToNamespace($file), 1);
-		$vendorAndPackage = strtolower(Nomenclature::getVendorAndPackage($pathAsNamespace));
-		$fileRequest = substr($file, strlen($vendorAndPackage) + 2);
+		if($file == '/') {
+			$file = '/index.html';
+		}
 
-		if($result = $this->getResource($this->applicationRoot . '/application/Public/' . $fileRequest)) {
+		if($result = $this->getResource($this->applicationRoot . '/application/Public' . $file)) {
 			return $result;
 		}
 
+		$pathAsNamespace = substr(Nomenclature::pathToNamespace($file), 1);
+		$vendorAndPackage = strtolower(Nomenclature::getVendorAndPackage($pathAsNamespace));
+		$fileRequest = substr($file, strlen($vendorAndPackage) + 2);
+		
 		$result = $this->getResource($this->applicationRoot . '/' . Core::PATH_PACKAGES . '/'. Nomenclature::toPath($vendorAndPackage) . '/Public/' . $fileRequest);
 		if($result) {
 			return $result;
 		}
+
 		return null;
 	}
 

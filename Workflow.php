@@ -133,7 +133,7 @@ class Workflow {
 	 	$package = $this->framework->getPackage((string)$attributes->name);
 
 	 	if(!$package) {
-	 		throw new \Exception('Package does not exist.');
+	 		throw new \Exception('Package does not exist: ' . (string)$attributes->name);
 	 	}
 
 	 	return $package;

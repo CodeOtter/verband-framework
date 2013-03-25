@@ -9,6 +9,8 @@ class Autoloader {
 
 	private $paths = array();
 	
+	public $filters = array();
+	
 	/**
 	 * Constructor
 	 * @param	string	The root path of the application
@@ -23,6 +25,44 @@ class Autoloader {
 				throw new \Exception('"' . $filename . '" does not exist and cannot be loaded');
 			}
 		}, true);
+		
+		$self = $this;
+
+		// Range
+		$this->filters['['] = function($key, $parts)  use ($self) {
+			$range = explode('-', substr($key, 0, strlen($key) - 2));
+			return implode('/', array_slice($parts, $range[0], $range[1] - $range[0])); 
+		};
+		
+		// Greater than
+		$this->filters['>'] = function($key, $parts)  use ($self) {
+			return implode('/', array_slice($parts, substr($key, 1) + 1));				
+		};
+		
+		// Less than
+		$this->filters['<'] = function($key, $parts)  use ($self) {
+			return implode('/', array_slice($parts, 0, substr($key, 1) - 1));
+		};
+		
+		// First
+		$this->filters['first'] = function($key, $parts)  use ($self) {
+			return $parts[0];
+		};
+
+		// Last
+		$this->filters['last'] = function($key, $parts)  use ($self) {
+			return $parts[count($parts) - 1];
+		};
+
+		// Index
+		$this->filters['index'] = function($key, $parts)  use ($self) {
+				return $parts[$key];
+		};
+		
+		// Composer
+		$this->filters['composer'] = function($keys, $parts) use ($self) {
+			return strtolower($parts[0] . '/' . $parts[1]) . '/' . $self->filters['>']('>1', $parts);
+		};
 	}
 
 	/**
@@ -46,41 +86,48 @@ class Autoloader {
 			if($prefix == $index || strtolower($prefix) == strtolower($index)) {
 
 				$parts = explode('\\', $className);
-				
-				// Autoload tokens to use
-				$filters['Vendor'] = $parts[0];
-				$filters['Package'] = $parts[1];
-
-				$i = 3;
-				foreach($parts as $part) {
-					$filters[(string)$i] = $part;
-					$i++;
-				}
-
-				$parts[0] = strtolower($parts[0]);
-				$parts[1] = strtolower($parts[1]);
-
-				$filters['vendor'] = $parts[0];
-				$filters['package'] = $parts[1];
-				$filters['composer'] = implode('/', $parts);
 
 				if(strpos($path, '{') === false) {
-					// PSR-0 token does not exist, append the directory naming convesion to the end of the path (Default Composer)
-					return $path . '/' . $filters['composer'];
+					// PSR-0 token does not exist, append the directory naming convesion to the end of the path (Default Composer and Verband)
+					return $path . '/' . $this->filters['composer'](null, $parts);
 				} else {
-					// Replace the PSR-0 token with the naming convention (Awkward Composer-meets-legacy framework convensions)
-					foreach($filters as $key => $filter) {
-						$result = str_replace('{' . $key . '}', $filter, $path);
+					// Replace the PSR-0 token with the naming convention (Awkward Composer-meets-legacy framework conventions)
+					$matches = array();
+					preg_match_all('/\{([^\}]+)\}/', $path, $matches);
+
+					foreach($matches[1] as $match) {
+						$key = explode('.', $match);
+
+						if(isset($this->filters[$key[0]])) {
+							// The key is the full match
+							$filter = $key[0];
+						} else if(isset($this->filters[$key[0][0]])) {
+							// The key is the first letter of the match
+							$filter = $key[0][0];
+						} else {
+							// The key is an index
+							$filter = 'index';
+						}
+						
+						$replacement = $this->filters[$filter]($key[0], $parts);
+
+						if(isset($key[1]) && $key[1] == 'lc') {
+							$replacement = strtolower($replacement);
+						}
+
+						$count = 1;
+
+						$path = str_replace('{' . $match. '}', $replacement, $path, $count);
 					}
-					return $result;
+					return $path;
 				}
 			}
 		}
-
+		
+		// Default Composer
 		$parts = explode('\\', $className);
 		$parts[0] = strtolower($parts[0]);
 		$parts[1] = strtolower($parts[1]);
-
 		return str_replace('\\', '/', implode('/', $parts));
 	}
 }
