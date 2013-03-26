@@ -147,6 +147,10 @@ class FileCache extends Cache {
 	 * @param unknown_type $source
 	 */
 	public static function rebuild() {
+		$cacheDirectory = dirname(self::$cacheFile);
+		if(!is_dir($cacheDirectory)) {
+			mkdir($cacheDirectory, 0755, true);
+		}
 		if(self::$rebuild) {
 			file_put_contents(self::$cacheFile, serialize(self::$cache));
 		}
