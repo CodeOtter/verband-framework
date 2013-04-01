@@ -90,8 +90,8 @@ class Core {
 			}
 
 			// Set the error handler
-			set_error_handler(function($errno, $errstr, $errfile, $errline) {
-				throw new \Exception($errstr);
+			set_error_handler(function($errno, $errstr, $errfile, $errline, $errcontext) {
+				throw new \Exception($errstr . ' in ' . $errfile . ' on line ' . $errline);
 			});
 
 			/**
