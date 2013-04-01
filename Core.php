@@ -227,7 +227,9 @@ class Core {
 	public function runWorkflow() {
 		// Assemble the workflow
 		$workflow = new Workflow($this);
-		$this->contexts->addChild($workflow->assemble($workflow->gather($this->getPackage(self::PATH_APPLICATION))));
+		$applicationPackage = end($this->packages);
+		reset($this->packages); 
+		$this->contexts->addChild($workflow->assemble($workflow->gather($applicationPackage)));
 
 		$this->executeWorkflow();
 	}
@@ -347,8 +349,8 @@ class Core {
 	 * @param unknown_type $name
 	 * @param unknown_type $package
 	 */
-	public function setPackage($name, $package) {
-		$this->packages[strtolower($name)] = $package;
+	public function setPackage($package) {
+		$this->packages[strtolower($package->getName())] = $package;
 		return $this;
 	}
 
@@ -365,7 +367,7 @@ class Core {
 			$packageName = '\\' . $name . '\Startup';
 			$package = new $packageName($path);
 			if($package instanceof Package) {
-				$this->setPackage($name, $package);
+				$this->setPackage($package);
 				$package->registerNamespaces($this->autoloader, $this->getPath(self::PATH_PACKAGES));
 				return $package;
 			}
