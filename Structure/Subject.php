@@ -241,12 +241,6 @@ class Subject extends Node{
 	 * @param unknown_type $response
 	 */
 	protected function getErrorResponse($exception) {
-		$code = $exception->getCode();
-	
-		if(!$code || $code < 200) {
-			$code = 500;
-		}
-	
-		return new Response($exception->getMessage(), $code);
+		return new Response($exception->getMessage(), 500);
 	}
 }
