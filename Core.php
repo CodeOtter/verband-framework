@@ -94,6 +94,12 @@ class Core {
 				throw new \Exception($errstr . ' in ' . $errfile . ' on line ' . $errline);
 			});
 
+			set_exception_handler(function($exception) {
+				ob_clean();
+				echo $exception->getMessage() . "\n";
+				echo $exception->getTraceAsString() . "\n";
+			});
+			
 			/**
 			 * Even catch fatal errors
 			 */
@@ -101,7 +107,6 @@ class Core {
 				$error = error_get_last();
 				if($error !== null) {
 					echo $error['message']." in ".$error['file'].' '.$error['line']."\n";
-					debug_print_backtrace();
 				}
 			});
 
@@ -264,18 +269,19 @@ class Core {
 			$this->executeWorkflow($child, $result);
 		}
 
-		$this->buildCache();
+		$this->windDown();
 	}
 
 	/**
 	 * 
 	 * Enter description here ...
 	 */
-	public function buildCache() {
+	public function windDown() {
 		// Rebuild cache on the way out
 		//$phpCache = new PhpCache($this->getPath(self::PATH_CACHE).'/verband.php', $this->getPath(self::PATH_ROOT));
 		//$phpCache->build();
-		FileCache::rebuild();		
+		$this->contexts->getState('entityManager')->flush();
+		FileCache::rebuild();
 	}
 	
 	/**
