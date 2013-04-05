@@ -280,7 +280,6 @@ class Core {
 		// Rebuild cache on the way out
 		//$phpCache = new PhpCache($this->getPath(self::PATH_CACHE).'/verband.php', $this->getPath(self::PATH_ROOT));
 		//$phpCache->build();
-		$this->contexts->getState('entityManager')->flush();
 		FileCache::rebuild();
 	}
 	
@@ -307,6 +306,7 @@ class Core {
 		set_time_limit(0);
 		$input = new \Symfony\Component\Console\Input\ArgvInput();
 		$this->getConsole()->run($input);
+		$this->contexts->getState('entityManager')->flush();
 	}
 
 	/**
@@ -314,7 +314,7 @@ class Core {
 	 * Enter description here ...
 	 */
 	public function runWorker() {
-		
+		$this->contexts->getState('entityManager')->flush();
 	}
 	
 	/**
