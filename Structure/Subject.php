@@ -11,10 +11,11 @@ use Verband\Framework\Util\AnnotationReader;
 /**
  * Converts a class into a Subject, which allows access to common developer methods.
  */
-class Subject extends Node{
+class Subject extends Node {
 	
 	protected static 
-		$annotationReader = null;
+		$annotationReader = null,
+		$instances = null;
 
 	private
 		$context,
@@ -27,7 +28,35 @@ class Subject extends Node{
 	 * @param unknown_type $context
 	 */
 	public function __construct($context = null) {
+		if(self::$instances === null) {
+			self::$instances = array();
+		}
+
+		self::$instances[get_class($this)] =  $this;
 		$this->context = $context;
+	}
+
+	/**
+	 * 
+	 * Enter description here ...
+	 * @param unknown_type $className
+	 */
+	public static function getInstance($className, $context = null) {
+		if(!isset(self::$instances[$className])) {
+			return new $className($context);
+		}
+
+		return self::$instances[$className];
+	}
+
+	/**
+	 * 
+	 * Enter description here ...
+	 * @param unknown_type $class
+	 */
+	public static function addInstance($class) {
+		self::$instances[get_class($class)] = $class;
+		return true;
 	}
 	
 	/**
@@ -105,7 +134,29 @@ class Subject extends Node{
 	 * @param unknown_type $packageName
 	 */
 	protected function getController($controllerName) {
-		return $this->getPackage(Nomenclature::getVendorAndPackage($controllerName))->getController($controllerName);	
+		if(!isset(self::$instances[$controllerName])) {
+			self::$instances[$controllerName] = $this->getPackage(Nomenclature::getVendorAndPackage($controllerName))->getController($controllerName); 
+		}
+		return self::$instances[$controllerName];
+	}
+
+	/**
+	* Returns the route associated with this controller's invocation.
+	* @return array
+	*/
+	public function getService($serviceName = null, $context = null) {
+		if($serviceName === null) {
+			$serviceName = Nomenclature::toServiceName($this->getAnnotation('entity'));
+		}
+		
+		if(!isset(self::$instances[$serviceName])) {
+			if($context === null) {
+				$context =$this->getContext();
+			}
+
+			self::$instances[$serviceName] = new $serviceName($context);
+		}
+		return self::$instances[$serviceName];
 	}
 	
 	/**
