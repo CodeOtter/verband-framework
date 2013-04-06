@@ -25,7 +25,8 @@ class Validator {
 		ERROR_INVALID_TYPE			= 15,
 		ERROR_EMPTY					= 16,
 		ERROR_NOT_EMPTY				= 17,
-		ERROR_NOT_SET				= 18;
+		ERROR_NOT_SET				= 18,
+		ERROR_ALREADY_EXISTS		= 19;
 
 	protected
 		$name,
@@ -87,7 +88,7 @@ class Validator {
 	 *
 	 * Enter description here ...
 	 */
-	public function isNumber() {
+	public function isNumeric() {
 		if(!is_numeric($this->value)) {
 			$this->error($this->name, self::ERROR_NOT_NUMBER);
 		}	
@@ -293,11 +294,18 @@ class Validator {
 	 * Enter description here ...
 	 * @throws \Exception
 	 */
-	public function isValid() {
-		if($this->errors) {
-			throw new \Exception($this->errors);
+	public function isValid($field = null) {
+		if($field === null) {
+			// Check the whole validator
+			if($this->errors) {
+				throw new \Exception($this->errors);
+			}
+			return true;
+		} else {
+			// Check a specific field
+			return !isset($this->errors[$field]);
 		}
-		return true;
+		
 	}
 
 	/**
@@ -392,6 +400,16 @@ class Validator {
 		$this->value = new \DateTime($this->value);
 	}
 
+	/**
+	 * 
+	 * Enter description here ...
+	 * @param unknown_type $name
+	 */
+	public function alreadyExists($name) {
+		$this->name = $name;
+		$this->error(self::ERROR_ALREADY_EXISTS);
+	}
+	
 	/**
 	 * 
 	 * Enter description here ...
