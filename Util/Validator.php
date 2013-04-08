@@ -26,18 +26,22 @@ class Validator {
 		ERROR_EMPTY					= 16,
 		ERROR_NOT_EMPTY				= 17,
 		ERROR_NOT_SET				= 18,
-		ERROR_ALREADY_EXISTS		= 19;
+		ERROR_ALREADY_EXISTS		= 19,
+		ERROR_UNEXPECTED_FORMAT		= 20;
 
 	protected
+		$entityName,
 		$name,
-		$value,
-		$errors = array();
+		$value;
 
 	/**
 	 *
 	 * Enter description here ...
 	 */
-	public function __construct() {
+	public function __construct($entityName) {
+		if(self::$errors === null) {
+			self::$errors = array();
+		}
 	}
 
 	/**
@@ -277,7 +281,7 @@ class Validator {
 	 * @param unknown_type $code
 	 */
 	public function error($code) {
-		$this->errors[$this->name][] = $code;
+		self::$errors[$this->entityName][$this->name][] = $code;
 	}
 
 	/**
@@ -297,13 +301,13 @@ class Validator {
 	public function isValid($field = null) {
 		if($field === null) {
 			// Check the whole validator
-			if($this->errors) {
+			if(self::$errors) {
 				throw new \Exception($this->errors);
 			}
 			return true;
 		} else {
 			// Check a specific field
-			return !isset($this->errors[$field]);
+			return !isset(self::$errors[$field]);
 		}
 		
 	}
@@ -409,7 +413,17 @@ class Validator {
 		$this->name = $name;
 		$this->error(self::ERROR_ALREADY_EXISTS);
 	}
-	
+
+	/**
+	*
+	* Enter description here ...
+	* @param unknown_type $name
+	*/
+	public function unexpectedFormat($name) {
+		$this->name = $name;
+		$this->error(self::ERROR_UNEXPECTED_FORMAT);
+	}
+
 	/**
 	 * 
 	 * Enter description here ...

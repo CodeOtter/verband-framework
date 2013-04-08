@@ -158,22 +158,22 @@ class Subject extends Node {
 		}
 		return self::$instances[$serviceName];
 	}
+
+	/**
+	 * Sets the route associated with this controller's invocation.
+	 * @param	array
+	 * @return void
+	 */
+	public function setContext($context) {
+		$this->context= $context;
+	}
 	
 	/**
 	 * 
 	 * Enter description here ...
 	 */
-	protected function getContext() {
+	public function getContext() {
 		return $this->context;
-	}
-
-	/**
-	* Sets the route associated with this controller's invocation.
-	* @param	array
-	* @return void
-	*/
-	protected function setContext($context) {
-		$this->context= $context;
 	}
 
 	/**
