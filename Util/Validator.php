@@ -2,6 +2,8 @@
 
 namespace Verband\Framework\Util;
 
+use Verband\Framework\Exceptions\ValidationException;
+
 class Validator {
 
 	protected static
@@ -34,6 +36,32 @@ class Validator {
 		$name,
 		$value;
 
+	public static function getErrorMessage($code) {
+		switch($code) {
+			case self::ERROR_TOO_SMALL				: return 'Minimum length required';
+			case self::ERROR_TOO_LARGE				: return 'Maximum length exceeded';
+			case self::ERROR_NO_MATCH				: return 'No match';
+			case self::ERROR_NOT_EMAIL				: return 'Not an email address';
+			case self::ERROR_NOT_NUMBER				: return 'Not a number';
+			case self::ERROR_NOT_STRING				: return 'Not a string';
+			case self::ERROR_NOT_DATE				: return 'Not a date';
+			case self::ERROR_NOT_ARRAY				: return 'Not an array';
+			case self::ERROR_NOT_OBJECT				: return 'Not an object';
+			case self::ERROR_NOT_CORRECT_INSTANCE	: return 'Not the correct object instance';
+			case self::ERROR_NOT_EQUALS				: return 'Unequal';
+			case self::ERROR_EQUALS					: return 'Eqaul';
+			case self::ERROR_NOT_NULL				: return 'Must be null';
+			case self::ERROR_NULL					: return 'Can\'t be null';
+			case self::ERROR_INVALID_TYPE			: return 'Not an invalid type';
+			case self::ERROR_EMPTY					: return 'Can\'t be empty';
+			case self::ERROR_NOT_EMPTY				: return 'Must be empty';
+			case self::ERROR_NOT_SET				: return 'Not set';
+			case self::ERROR_ALREADY_EXISTS			: return 'Already exists';
+			case self::ERROR_UNEXPECTED_FORMAT		: return 'Unexpected format';
+			default									: return 'Unknown';
+		}
+	}
+	
 	/**
 	 *
 	 * Enter description here ...
@@ -42,6 +70,7 @@ class Validator {
 		if(self::$errors === null) {
 			self::$errors = array();
 		}
+		$this->entityName = $entityName;
 	}
 
 	/**
@@ -72,7 +101,7 @@ class Validator {
 	 */
 	public function matches($pattern) {
 		if(!preg_match($pattern, $this->value)) {
-			$this->error($this->name, self::ERROR_NO_MATCH);
+			$this->error(self::ERROR_NO_MATCH);
 		}
 		return $this;
 	}
@@ -83,7 +112,7 @@ class Validator {
 	 */
 	public function isEmail() {
 		if(!filter_var($this->value, FILTER_VALIDATE_EMAIL)) {
-			$this->error($this->name, self::ERROR_NOT_EMAIL);
+			$this->error(self::ERROR_NOT_EMAIL);
 		}
 		return $this;
 	}
@@ -94,7 +123,7 @@ class Validator {
 	 */
 	public function isNumeric() {
 		if(!is_numeric($this->value)) {
-			$this->error($this->name, self::ERROR_NOT_NUMBER);
+			$this->error(self::ERROR_NOT_NUMBER);
 		}	
 		return $this;
 	}
@@ -105,7 +134,7 @@ class Validator {
 	 */
 	public function isString() {
 		if(!is_string($this->value)) {
-			$this->error($this->name, self::ERROR_NOT_STRING);
+			$this->error(self::ERROR_NOT_STRING);
 		}
 		return $this;
 	}
@@ -116,7 +145,7 @@ class Validator {
 	*/
 	public function isDate() {
 		if(!($this->value instanceof \DateTime)) {
-			$this->error($this->name, self::ERROR_NOT_DATE);
+			$this->error(self::ERROR_NOT_DATE);
 		}
 		return $this;
 	}
@@ -127,7 +156,7 @@ class Validator {
 	 */
 	public function isArray() {
 		if(!is_array($this->value)) {
-			$this->error($this->name, self::ERROR_NOT_ARRAY);
+			$this->error(self::ERROR_NOT_ARRAY);
 		}
 		return $this;
 	}
@@ -138,7 +167,7 @@ class Validator {
 	 */
 	public function isObject() {
 		if(!is_object($this->value)) {
-			$this->error($this->name, self::ERROR_NOT_OBJECT);
+			$this->error(self::ERROR_NOT_OBJECT);
 		}
 		return $this;
 	}
@@ -150,7 +179,7 @@ class Validator {
 	 */
 	public function isInstanceOf($className) {
 		if(!is_subclass_of($this->value, $className)) {
-			$this->error($this->name, self::ERROR_NOT_CORRECT_INSTANCE);
+			$this->error(self::ERROR_NOT_CORRECT_INSTANCE);
 		}
 		return $this;
 	}
@@ -161,22 +190,22 @@ class Validator {
 	 * @param unknown_type $value
 	 */
 	public function isGreaterThan($value) {
-		if(is_numeric($value)) {
+		if(is_numeric($this->value)) {
 			$compare = $this->value;
-		} else if(is_string($value)) {
+		} else if(is_string($this->value)) {
 			$compare = strlen($this->value);
-		} else if(is_array($value)) {
+		} else if(is_array($this->value)) {
 			$compare = count($this->value);
-		} else if($value instanceof \DateTime) {
+		} else if($this->value instanceof \DateTime) {
 			$compare = $this->value->getTimestamp();
 			$datetime = new \DateTime($value);
 			$value = $$datetime->getTimestamp();
 		} else{
-			$this->error($this->name, self::ERROR_INVALID_TYPE);
+			$this->error(self::ERROR_INVALID_TYPE);
 		}
 		
 		if($compare < $value) {
-			$this->error($this->name, self::ERROR_TOO_SMALL);
+			$this->error(self::ERROR_TOO_SMALL);
 		}
 
 		return $this;
@@ -199,11 +228,11 @@ class Validator {
 			$datetime = new \DateTime($value);
 			$value = $$datetime->getTimestamp();
 		} else {
-			$this->error($this->name, self::ERROR_INVALID_TYPE);
+			$this->error(self::ERROR_INVALID_TYPE);
 		}
 
 		if($compare > $value) {
-			$this->error($this->name, self::ERROR_TOO_LARGE);
+			$this->error(self::ERROR_TOO_LARGE);
 		}
 
 		return $this;
@@ -216,7 +245,7 @@ class Validator {
 	 */
 	public function isEmpty() {
 		if((is_string($this->value) && $this->value != '') || $this->value !== null || (is_array($this->value) && count($this->value) != 0)) {
-			$this->error($this->name, self::ERROR_NOT_EMPTY);
+			$this->error(self::ERROR_NOT_EMPTY);
 		}
 		return $this;
 	}
@@ -228,14 +257,14 @@ class Validator {
 	 */
 	public function isNotEmpty() {
 		if((is_string($this->value) && trim($this->value) == '') || $this->value === null || (is_array($this->value) && count($this->value) == 0)) {
-			$this->error($this->name, self::ERROR_EMPTY);
+			$this->error(self::ERROR_EMPTY);
 		}
 		return $this;
 	}
 	
 	public function is($value) {
 		if($this->value != $value) {
-			$this->error($this->name, self::ERROR_NOT_EMAIL);
+			$this->error(self::ERROR_NOT_EMAIL);
 		}
 		return $this;
 	}
@@ -247,7 +276,7 @@ class Validator {
 	 */
 	public function isNot($value) {
 		if($this->value == $value) {
-			$this->error($this->name, self::ERROR_EQUALS);
+			$this->error(self::ERROR_EQUALS);
 		}
 		return $this;
 	}
@@ -258,7 +287,7 @@ class Validator {
 	 */
 	public function isNotNull() {
 		if($this->value === null) {
-			$this->error($this->name, self::ERROR_NULL);
+			$this->error(self::ERROR_NULL);
 		}
 		return $this;
 	}
@@ -269,47 +298,9 @@ class Validator {
 	 */
 	public function isNull() {
 		if($this->value !== null) {
-			$this->error($this->name, self::ERROR_NOT_NULL);
+			$this->error(self::ERROR_NOT_NULL);
 		}
 		return $this;
-	}
-
-	/**
-	 * 
-	 * Enter description here ...
-	 * @param unknown_type $message
-	 * @param unknown_type $code
-	 */
-	public function error($code) {
-		self::$errors[$this->entityName][$this->name][] = $code;
-	}
-
-	/**
-	 * 
-	 * Enter description here ...
-	 */
-	public function notSet($name) {
-		$this->name = $name;
-		$this->error(self::ERROR_NOT_SET);
-	}
-	
-	/**
-	 * 
-	 * Enter description here ...
-	 * @throws \Exception
-	 */
-	public function isValid($field = null) {
-		if($field === null) {
-			// Check the whole validator
-			if(self::$errors) {
-				throw new \Exception($this->errors);
-			}
-			return true;
-		} else {
-			// Check a specific field
-			return !isset(self::$errors[$field]);
-		}
-		
 	}
 
 	/**
@@ -318,6 +309,7 @@ class Validator {
 	 */
 	public function trim() {
 		$this->value = trim($this->value);
+		return $this;
 	}
 
 	/**
@@ -337,7 +329,7 @@ class Validator {
 	 *
 	 * Enter description here ...
 	 */
-	public function stripHtml($pattern) {
+	public function stripHtml() {
 		$length = 0;
 		while(strlen($this->value) != $length) {
 			$length = strlen($this->value);
@@ -370,6 +362,7 @@ class Validator {
 	 */
 	public function asInteger() {
 		$this->value = (integer)$this->value;
+		return $this;
 	}
 
 	/**
@@ -378,6 +371,7 @@ class Validator {
 	 */
 	public function asFloat() {
 		$this->value = (float)$this->value;
+		return $this;
 	}
 	
 	/**
@@ -386,6 +380,7 @@ class Validator {
 	 */
 	public function asBoolean() {
 		$this->value = (boolean)$this->value;
+		return $this;
 	}
 	
 	/**
@@ -394,6 +389,7 @@ class Validator {
 	 */
 	public function asString() {
 		$this->value = (string)$this->value;
+		return $this;
 	}
 	
 	/**
@@ -402,8 +398,18 @@ class Validator {
 	 */
 	public function asDatetime() {
 		$this->value = new \DateTime($this->value);
+		return $this;
 	}
 
+	/**
+	*
+	* Enter description here ...
+	*/
+	public function asTimestamp() {
+		$this->value = new \DateTime('@' . $this->value);
+		return $this;
+	}
+	
 	/**
 	 * 
 	 * Enter description here ...
@@ -422,6 +428,43 @@ class Validator {
 	public function unexpectedFormat($name) {
 		$this->name = $name;
 		$this->error(self::ERROR_UNEXPECTED_FORMAT);
+	}
+
+	/**
+	*
+	* Enter description here ...
+	* @param unknown_type $message
+	* @param unknown_type $code
+	*/
+	public function error($code) {
+		self::$errors[$this->entityName][$this->name][] = $code;
+	}
+	
+	/**
+	 *
+	 * Enter description here ...
+	 */
+	public function notSet($name) {
+		$this->name = $name;
+		$this->error(self::ERROR_NOT_SET);
+	}
+	
+	/**
+	 *
+	 * Enter description here ...
+	 * @throws \Exception
+	 */
+	public function isValid($field = null) {
+		if($field === null) {
+			// Check the whole validator
+			if(self::$errors) {
+				throw new ValidationException(self::$errors);
+			}
+			return true;
+		} else {
+			// Check a specific field
+			return !isset(self::$errors[$field]);
+		}
 	}
 
 	/**
