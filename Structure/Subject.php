@@ -121,6 +121,13 @@ class Subject extends Node {
 
 	/**
 	 * 
+	 */
+	protected function getUser() {
+		return $this->getContext()->getState('user');
+	}
+	
+	/**
+	 * 
 	 * Enter description here ...
 	 * @param unknown_type $packageName
 	 */
