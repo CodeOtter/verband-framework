@@ -120,12 +120,12 @@ class Subject extends Node {
 	}
 
 	/**
-	 * 
+	 *
 	 */
-	protected function getUser() {
-		return $this->getContext()->getState('user');
+	protected function getSession() {
+		return $this->getContext()->getState('session');
 	}
-	
+
 	/**
 	 * 
 	 * Enter description here ...

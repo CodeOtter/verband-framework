@@ -95,7 +95,6 @@ class Core {
 			});
 
 			set_exception_handler(function($exception) {
-				ob_clean();
 				echo $exception->getMessage() . "\n";
 				echo $exception->getTraceAsString() . "\n";
 			});

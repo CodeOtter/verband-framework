@@ -261,9 +261,10 @@ class Workflow {
 	  * @return	Array
 	  */
 	 protected function handleAfterNode($node, $chain) {
+
 	 	$parent = $this->getPackage($this->getParentNode($node));
 	 	$attributes = $node->attributes();
-	 	
+
 	 	if($attributes->process === null) {
 	 		throw new \Exception('The After action node requires a "process" attribute.');
 	 	}
@@ -281,8 +282,7 @@ class Workflow {
 
  		if(strpos($injectClass, '\\Process\\')) {
  			// Dealing with a process
- 			$injectObject = new $injectClass();
- 			$result = array(new Context($inject, $parent, $injectObject));
+ 			$result = array(new Context($injectClass, $parent, new $injectClass()));
  		} else {
  			// Dealing with an package
  			$injectObject = new $injectClass($this->framework->getPath(Core::PATH_PACKAGES) . '/' . Nomenclature::toPath(Nomenclature::getVendorAndPackage($injectClass)));
@@ -294,7 +294,7 @@ class Workflow {
  		// Find where to inject the process
  		foreach($chain as $index => $context) {
  			if(get_class($context->getProcess()) == $process) {
- 				$targetIndex = $index;
+ 				$targetIndex = $index + 1;
  				break;
  			}
  		}
