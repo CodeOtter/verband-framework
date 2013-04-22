@@ -202,6 +202,7 @@ class Validator {
 			$value = $$datetime->getTimestamp();
 		} else{
 			$this->error(self::ERROR_INVALID_TYPE);
+			return $this;
 		}
 		
 		if($compare < $value) {
@@ -229,6 +230,7 @@ class Validator {
 			$value = $$datetime->getTimestamp();
 		} else {
 			$this->error(self::ERROR_INVALID_TYPE);
+			return $this;
 		}
 
 		if($compare > $value) {
@@ -463,7 +465,7 @@ class Validator {
 			return true;
 		} else {
 			// Check a specific field
-			return !isset(self::$errors[$field]);
+			return !isset(self::$errors[$this->entityName][$field]);
 		}
 	}
 
@@ -473,5 +475,12 @@ class Validator {
 	 */
 	public function get() {
 		return $this->value;
+	}
+
+	/**
+	 * 
+	 */
+	public function getErrors() {
+	    return self::$errors;
 	}
 }
