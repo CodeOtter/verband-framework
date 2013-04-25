@@ -2,8 +2,8 @@
 
 namespace Verband\Framework\Routing;
 
+use Verband\Framework\Core;
 use Verband\Framework\Util\Nomenclature;
-
 use CodeOtter\Rest\Http\Request;
 
 /**
@@ -42,7 +42,7 @@ class Router {
 	public function get($file) {
 		// Prevent unwanted traversal of the project directories
 		while(strpos($file, '..') !== false) {
-			$file = str_replace('..', ''. $file);
+			$file = str_replace('..', '' . $file);
 		}
 
 		if($file == '/') {

@@ -747,6 +747,16 @@ class MimeType {
 
 	/**
 	 * 
+	 * @param unknown_type $mimeType
+	 * @param unknown_type $list
+	 * @return boolean
+	 */
+	public static function isIn($mimeType, $list = array()) {
+		return in_array($mimeType, $list);
+	}
+	
+	/**
+	 * 
 	 * Enter description here ...
 	 * @param unknown_type $type
 	 */

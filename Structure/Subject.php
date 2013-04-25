@@ -4,7 +4,7 @@ namespace Verband\Framework\Structure;
 
 use Verband\Framework\Util\MimeType;
 use Verband\Framework\Util\Nomenclature;
-use Verband\Framework\Http\Response;
+use Symfony\Component\HttpFoundation\Response;
 use Verband\Framework\Core;
 use Verband\Framework\Util\AnnotationReader;
 

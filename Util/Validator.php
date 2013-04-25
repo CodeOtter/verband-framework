@@ -52,7 +52,7 @@ class Validator {
 			case self::ERROR_EQUALS					: return 'Eqaul';
 			case self::ERROR_NOT_NULL				: return 'Must be null';
 			case self::ERROR_NULL					: return 'Can\'t be null';
-			case self::ERROR_INVALID_TYPE			: return 'Not an invalid type';
+			case self::ERROR_INVALID_TYPE			: return 'Not a valid type';
 			case self::ERROR_EMPTY					: return 'Can\'t be empty';
 			case self::ERROR_NOT_EMPTY				: return 'Must be empty';
 			case self::ERROR_NOT_SET				: return 'Not set';

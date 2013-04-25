@@ -3,6 +3,7 @@
 namespace Verband\Framework\Http;
 
 use Verband\Framework\Util\MimeType;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Response represents an HTTP response.
@@ -13,9 +14,9 @@ use Verband\Framework\Util\MimeType;
  */
 class ResourceResponse extends Response {
 
-	public function __construct($fileMame, $fileContents) {
-		parent::__construct($fileContents, 200, array(
+	public function __construct($fileMame, $fileContents, $headers = array()) {
+		parent::__construct($fileContents, 200, array_merge($headers, array(
 			'content-type'	=> MimeType::ExtensionToType($fileMame)
-		));
+		)));
 	}
 }

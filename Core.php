@@ -5,8 +5,8 @@ namespace Verband\Framework;
 require(__DIR__ . '/Structure/Autoloader.php');
 
 use Verband\Framework\Caching\PhpCache;
-use Verband\Framework\Http\ResourceResponse;
-use Verband\Framework\Http\ParameterBag;
+use Symfony\Component\HttpFoundation\ResourceResponse;
+use Symfony\Component\HttpFoundation\ParameterBag;
 use Verband\Framework\Caching\FileCache;
 use Verband\Framework\Process\Initialization;
 use Verband\Framework\Structure\Autoloader;

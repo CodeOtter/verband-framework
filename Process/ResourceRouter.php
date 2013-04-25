@@ -5,10 +5,10 @@ namespace Verband\Framework\Process;
 use Verband\Framework\Http\ResourceResponse;
 use Verband\Framework\Routing\Router;
 use Verband\Framework\Core;
-use Verband\Framework\Http\Request;
 use Verband\Framework\Structure\Process;
 use Verband\Framework\Structure\Context;
 use Verband\Framework\Exceptions\ProcessHaltException;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Transforms the body of a request based on the Content-Type and Accept headers.
