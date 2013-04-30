@@ -2,6 +2,9 @@
 
 namespace Verband\Framework\Routing;
 
+use Verband\Framework\Util\MimeType;
+
+use Verband\Framework\Structure\Subject;
 use Verband\Framework\Core;
 use Verband\Framework\Util\Nomenclature;
 use CodeOtter\Rest\Http\Request;
@@ -12,7 +15,7 @@ use CodeOtter\Rest\Http\Request;
  * @author 12dCode
  *
  */
-class Router {
+class Router extends Subject {
 
 	private $applicationRoot;
 
@@ -20,8 +23,9 @@ class Router {
 	 * 
 	 * Enter description here ...
 	 */
-	public function __construct($applicationRoot) {
+	public function __construct($applicationRoot, $context) {
 		$this->applicationRoot = $applicationRoot;
+		parent::__construct($context);
 	}
 
 	/**
@@ -29,7 +33,7 @@ class Router {
 	 * Enter description here ...
 	 * @param unknown_type $request
 	 */
-	public function isResource($request) {
+	public function isResourceRequest($request) {
 		$uri = $request->getRequestUri();
 		return strlen(pathinfo($uri, PATHINFO_EXTENSION)) > 0 || ($uri == '/' && in_array('text/html', $request->getAcceptableContentTypes()));
 	}
@@ -57,13 +61,14 @@ class Router {
 		$pathAsNamespace = substr(Nomenclature::pathToNamespace($file), 1);
 		$vendorAndPackage = strtolower(Nomenclature::getVendorAndPackage($pathAsNamespace));
 		$fileRequest = substr($file, strlen($vendorAndPackage) + 2);
-		
+
 		$result = $this->getResource($this->applicationRoot . '/' . Core::PATH_PACKAGES . '/'. Nomenclature::toPath($vendorAndPackage) . '/Public/' . $fileRequest);
+
 		if($result) {
 			return $result;
 		}
 
-		return null;
+		return false;
 	}
 
 	/**
@@ -71,9 +76,20 @@ class Router {
 	 * Enter description here ...
 	 * @param unknown_type $filepath
 	 */
-	public function getResource($filepath) {
-		if(is_file($filepath)) {
-			return file_get_contents($filepath);
+	public function getResource($filePath) {
+		if(is_file($filePath)) {
+		    if(MimeType::isParsable($filePath, $this->getSetting('Application[webServer][parsables]'))) {
+		        // Parse a PHP file
+		        ob_start();
+		        include $filePath;
+		        $contents = ob_get_contents();
+		        ob_end_clean();
+		    } else {
+		        // Open a file
+		        // @TODO: Put file caching strategy here
+		        $contents = file_get_contents($filePath);
+		    }
+		    return $contents;
 		} else {
 			return false;
 		}

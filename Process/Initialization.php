@@ -2,6 +2,8 @@
 
 namespace Verband\Framework\Process;
 
+use Symfony\Component\HttpFoundation\Request;
+
 use Verband\Framework\Core;
 use Verband\Framework\Caching\FileCache;
 use Verband\Framework\Structure\Process;
@@ -28,6 +30,8 @@ class Initialization implements Process {
 	public function execute(Context $context, $lastResult) {
 		// Establish caching
 		FileCache::setCacheFile($context->getState('framework')->getPath(Core::PATH_CACHE) . '/verband.cache');
-		return $lastResult;
+		$request = Request::createFromGlobals();
+		$context->setState('request', $request);
+		return $request;
 	}
 }

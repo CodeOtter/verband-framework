@@ -168,6 +168,16 @@ class Core {
 	}
 
 	/**
+	 * 
+	 */
+	public function getApplication() {
+	    end($this->packages);
+	    $result = current($this->packages);
+	    reset($this->packages);
+	    return $result;
+	}
+	
+	/**
 	 * Returns a specific package
 	 * @param string	$packageName
 	 * @return Package

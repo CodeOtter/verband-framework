@@ -84,8 +84,9 @@ class Workflow {
 	 	// Stitch the contexts together into a chain
 	 	$initialContext = array_shift($contexts);
 	 	$currentContext = $initialContext;
+
 	 	foreach($contexts as $context) {
-	 		$currentContext->addChild($context);
+	 	    $currentContext->addChild($context);
 	 		$currentContext = $context;
 	 	}
 	 	
@@ -121,23 +122,24 @@ class Workflow {
 	 		throw new \Exception('Node is expected to be a SimpleXMLElement, but it is a ' . gettype($node));
 	 	}
 
-	 	if($node->getName() != self::NODE_PACKAGE) {
-	 		throw new \Exception('Cannot extract the package for a ' . $node->getName() . ' workflow node.');
+	 	if($node->getName() == self::NODE_APPLICATION) {
+            return $this->framework->getApplication();
+	 	} else if($node->getName() == self::NODE_PACKAGE) {
+	 	    $attributes = $node->attributes();
+	 	    
+	 	    if($attributes->name === null) {
+	 	        throw new \Exception('Package node missing a "name" attribute.');
+	 	    }
+	 	    
+	 	    $package = $this->framework->getPackage((string)$attributes->name);
+	 	    
+	 	    if(!$package) {
+	 	        throw new \Exception('Package does not exist: ' . (string)$attributes->name);
+	 	    }
+	 	    return $package;
+	 	} else {
+	 	    throw new \Exception('Cannot extract the package for a ' . $node->getName() . ' workflow node.');
 	 	}
-
-	 	$attributes = $node->attributes();
-
-	 	if($attributes->name === null) {
-	 		throw new \Exception('Package node missing a "name" attribute.');
-	 	}
-
-	 	$package = $this->framework->getPackage((string)$attributes->name);
-
-	 	if(!$package) {
-	 		throw new \Exception('Package does not exist: ' . (string)$attributes->name);
-	 	}
-
-	 	return $package;
 	 }
 
 	 /**
@@ -175,7 +177,7 @@ class Workflow {
 	  */
 	 protected function handleApplicationNode($node) {
 	 	$result = array();
-	 	 	
+
 	 	foreach($node->children() as $child) {
 	 		if($child->getName() == self::NODE_PACKAGE) {
 	 			$result = array_merge($result, $this->handlePackageNode($child));
@@ -210,16 +212,17 @@ class Workflow {
 			// The package is a process loader
 			foreach($children as $child) {
 				$nodeName = $child->getName();
+
 				$transformMethod = 'handle' . ucfirst($nodeName) . 'Node';
 				if(!method_exists($this, $transformMethod)) {
-					throw new \Exception('Unknown workflow element "' . $tag . '" in ' . $package->getName());
+					throw new \Exception('Unknown workflow element "' . $nodeName . '" in ' . $package->getName());
 				}
 
 				if($nodeName == self::NODE_PROCESS) {
 					// Dealing with a data node
 					$result[] = $this->$transformMethod($child);
 				} else if($nodeName == self::NODE_PACKAGE) {
-					$result = array_merge($this->$transformMethod($child), $result);
+				    $result = array_merge($this->$transformMethod($child), $result);
 				} else {
 					// Dealing with an action node
 					$result = $this->$transformMethod($child, $result);
@@ -239,7 +242,6 @@ class Workflow {
 	  */
 	 protected function handleProcessNode($node) {
 	 	$parent = $this->getPackage($this->getParentNode($node));
-	 	 	
 	 	if(!$parent) {
 	 		throw new \Exception('Better parent detection needed');
 	 	}
@@ -313,7 +315,7 @@ class Workflow {
 	  * @param	\SimpleEXMLElement
 	  * @return	Array
 	  */
-	 protected function handleBeforeNode($node, $results) {	
+	 protected function handleBeforeNode($node, $chain) {	
 	 	$parent = $this->getParentNode($node);
 	 	$attributes = $node->attributes();
 	 	$process = $this->getProcessName((string)$attributes->process, $parent);
@@ -325,7 +327,7 @@ class Workflow {
 	  * @param	\SimpleEXMLElement
 	  * @return	Array
 	  */
-	 protected function handleMoveNode($node, $results) {
+	 protected function handleMoveNode($node, $chain) {
 	 	$parent = $this->getParentNode($node);
 	 	$attributes = $node->attributes();
 	 	$process = $this->getProcessName($attributes['process'], $parent);
@@ -337,7 +339,7 @@ class Workflow {
 	  * @param	\SimpleEXMLElement
 	  * @return	Array
 	  */
-	 protected function handleSwapNode($node, $results) {
+	 protected function handleSwapNode($node, $chain) {
 	 	$parent = $this->getParentNode($node);
 	 	$attributes = $node->attributes();
 	 	$process = $this->getProcessName($attributes['process'], $parent);
@@ -349,10 +351,34 @@ class Workflow {
 	  * @param	\SimpleEXMLElement
 	  * @return	Array
 	  */
-	 protected function handleRemovNode($node, $results) {
-	 	$parent = $this->getParentNode($node);
+	 protected function handleRemoveNode($node, $chain) {
+	 	$parent = $this->getPackage($this->getParentNode($node));
 	 	$attributes = $node->attributes();
-	 	$process = $this->getProcessName($attributes['process'], $parent);;
+
+	 	if($attributes->process === null) {
+	 	    throw new \Exception('The Remove action node requires a "process" attribute.');
+	 	}
+
+	 	$process = $this->getProcessName((string)$attributes->process, $parent);
+	 	
+	 	$targetIndex = null;
+
+	 	// Find where to inject the process
+	 	foreach($chain as $index => $context) {
+ 			if(get_class($context->getProcess()) == $process) {
+ 			    $targetIndex = $index;
+ 			    break;
+ 			}
+	 	}
+
+	 	if($targetIndex === null) {
+	 	    throw new \Exception('Process "' . $process . '" cannot be found.');
+	 	}
+
+	 	// Perform the injection
+	 	unset($chain[$targetIndex]);
+
+	 	return $chain;
 	 }
 
 	 /**

@@ -132,6 +132,10 @@ class Subject extends Node {
 	 * @param unknown_type $packageName
 	 */
 	protected function getPackage($packageName = null) {
+	    if($packageName === null) {
+	        $packageName = strtolower(Nomenclature::getVendorAndPackage($this));
+	    }
+
 		return $this->getFramework()->getPackage($packageName);
 	}
 
@@ -194,6 +198,13 @@ class Subject extends Node {
 
 	/**
 	 * 
+	 */
+	protected function getEnvironment() {
+	    return $this->context->getState('framework')->getEnvironment();
+	}
+	
+	/**
+	 * 
 	 * Enter description here ...
 	 * @param unknown_type $name
 	 * @param unknown_type $value
@@ -243,8 +254,7 @@ class Subject extends Node {
 	 * @throws \Exception
 	 */
 	protected function getPublicAsset($fileName, $parameters = array()) {
-		
-		$filePath = $this->getPackagesPath() . '/' . Nomenclature::toPath(Nomenclature::getVendorAndPackage($this)) . '/Public/' . $fileName;
+	    $filePath = $this->getPackage()->getDirectory() . '/Public/' . $fileName;
 
 		if(is_file($filePath)) {
 			if(MimeType::isParsable($filePath, $this->getSetting('Application[webServer][parsables]'))) {

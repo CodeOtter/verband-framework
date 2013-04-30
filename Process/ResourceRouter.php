@@ -29,22 +29,24 @@ class ResourceRouter implements Process {
 	 * @return	mixed
 	 */
 	public function execute(Context $context, $lastResult) {
-		// Check if we are dealing with a resource
-		$request = Request::createFromGlobals();
-		$router = new Router($context->getState('framework')->getPath(Core::PATH_ROOT));
 
-		if($router->isResource($request)) {
+		// Check if we are dealing with a resource
+		$router = new Router($context->getState('framework')->getPath(Core::PATH_ROOT), $context);
+
+		if($router->isResourceRequest($lastResult)) {
 			// Attach a context to handle files
-			$file = $request->getRequestUri();
-			$response = new ResourceResponse($file, $router->get($file));
-			$response->send();
-			throw new ProcessHaltException();
+			$file = $lastResult->getRequestUri();
+			$fileContents = $router->get($file);
+			if($fileContents) {
+    			$response = new ResourceResponse($file, $fileContents);
+    			$response->send();
+    			throw new ProcessHaltException();
+			}
 		}
 
 		// Add to the context
-		$context->setState('request', $request);
 		$context->setState('router', $router);
 
-		return $request;
+		return $lastResult;
 	}
 }

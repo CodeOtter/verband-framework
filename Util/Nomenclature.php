@@ -136,7 +136,12 @@ class Nomenclature {
 	public static function getVendorAndPackage($value) {
 		$value = self::convert($value);
 		$components = explode('\\', $value);
-		return $components[0] . '\\' . $components[1];
+		if(isset($components[1])) {
+		    return $components[0] . '\\' . $components[1];
+		} else {
+		    return $components[0];
+		}
+		//return $components[0] . '\\' . $components[1];
 	}
 
 	/**
