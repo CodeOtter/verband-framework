@@ -2,7 +2,7 @@
 
 namespace Verband\Framework\Caching;
 
-use Verband\Framework\Compiler;
+use Verband\Framework\Util;
 
 class PhpCache extends Cache {
 	

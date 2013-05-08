@@ -151,6 +151,7 @@ class FileCache extends Cache {
 		if(!is_dir($cacheDirectory)) {
 			mkdir($cacheDirectory, 0755, true);
 		}
+
 		if(self::$rebuild) {
 			file_put_contents(self::$cacheFile, serialize(self::$cache));
 		}
@@ -163,7 +164,7 @@ class FileCache extends Cache {
 	 */
 	public function load() {
 		if(file_exists(self::$cacheFile)) {
-			//self::$cache = unserialize(file_get_contents(self::$cacheFile));
+			self::$cache = unserialize(file_get_contents(self::$cacheFile));
 		}
 	} 
 }

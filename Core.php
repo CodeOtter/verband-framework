@@ -119,9 +119,6 @@ class Core {
 			// Load the Framework Package
 			$this->loadPackage('Verband\Framework',$this->paths[self::PATH_PACKAGES]);
 
-			//$this->autoloader->setPath('Verband\Framework', $this->paths[self::PATH_PACKAGES]);
-			//$this->autoloader->setPath('Symfony\Component', $this->paths[self::PATH_PACKAGES] . '/{first.lc}/{2.lc}/{first}/Component/{>1}');
-
 			// initialize contexts
 			$this->contexts = new Context('Verband\Framework', null, new Initialization());
 			$this->contexts->setState('framework', $this);	
@@ -246,6 +243,7 @@ class Core {
 		$this->contexts->addChild($workflow->assemble($workflow->gather($applicationPackage)));
 
 		$this->executeWorkflow();
+		$this->windDown();
 	}
 	
 	/**
@@ -277,8 +275,6 @@ class Core {
 		foreach($context->getChildren() as $child) {
 			$this->executeWorkflow($child, $result);
 		}
-
-		$this->windDown();
 	}
 
 	/**
