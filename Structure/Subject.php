@@ -290,8 +290,11 @@ class Subject extends Node {
 	 *
 	 * Enter description here ...
 	 */
-	protected function getRepository() {
-		return $this->getEntityManager()->getRepository($this->getAnnotation('entity'));
+	protected function getRepository($repositoryName = null) {
+	    if($repositoryName === null) {
+	        $repositoryName = $this->getAnnotation('entity');
+	    }
+		return $this->getEntityManager()->getRepository($repositoryName);
 	}
 
 	/**
