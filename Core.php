@@ -123,21 +123,12 @@ class Core {
 			// Establish caching
 			FileCache::setCacheFile($this->paths[self::PATH_CACHE] . '/verband.cache');
 
-			// Load the Framework Package
-			$this->loadPackage('Verband\Framework',$this->paths[self::PATH_PACKAGES]);
-
-			// initialize contexts
-			$this->contexts = new Context('Verband\Framework', null, new Initialization());
-			$this->contexts->setState('framework', $this);	
-
-			// Initialize settings
-			$this->settings = new ParameterBag();
-			$settings = new Settings($this->paths[self::PATH_APPLICATION] . '/Settings/config.yml');
-			$this->settings->add($settings->getContents());
-
 			$packageCache = new PackageCache($this->paths[self::PATH_CACHE] . '/packages.cache');
 			$packageCache->load();
 			if($packageCache->isEmpty()) {
+			    // Load the Framework Package
+			    $this->loadPackage('Verband\Framework',$this->paths[self::PATH_PACKAGES]);
+
     			// Initialize the 3rd party packages
     			$this->loadPackages();
     
@@ -150,14 +141,16 @@ class Core {
 			} else {
 			    // Load packages from cache
 			    foreach($packageCache->getAll() as $packageName => $packageData) {
-			        if($packageName != 'Verband\Framework\Startup') {
-    			        require_once($packageData['directory'] . '/Startup.php');
-    			        $package = new $packageName($packageData['directory']);
-    		            $this->setPackage($package);
-    			        $package->registerNamespaces($this->autoloader, $this->getPath(self::PATH_PACKAGES));
-			        }
+   			        require_once($packageData['directory'] . '/Startup.php');
+   			        $package = new $packageName($packageData['directory']);
+   		            $this->setPackage($package);
+   			        $package->registerNamespaces($this->autoloader, $this->getPath(self::PATH_PACKAGES));
 			    }
 			}
+
+			// initialize contexts
+			$this->contexts = new Context('Verband\Framework', null, new Initialization());
+			$this->contexts->setState('framework', $this);
 
 			// Initialize the packages
 			$this->intializePackages();
@@ -402,6 +395,7 @@ class Core {
 			//$this->autoloader->setPath($name, $this->getPath(self::PATH_PACKAGES));
 			$packageName = '\\' . $name . '\Startup';
 			$package = new $packageName($path);
+
 			if($package instanceof Package) {
 				$this->setPackage($package);
 				$package->registerNamespaces($this->autoloader, $this->getPath(self::PATH_PACKAGES));
@@ -432,6 +426,11 @@ class Core {
 	private function intializePackages() {
 	    $settingsCache = new SettingsCache();
 	    if($settingsCache->isEmpty()) {
+	        // Initialize settings
+	        $this->settings = new ParameterBag();
+	        $settings = new Settings($this->paths[self::PATH_APPLICATION] . '/Settings/config.yml');
+	        $this->settings->add($settings->getContents());
+
 	        foreach($this->packages as $package) {
 	            // Load a packages settings
 	            $this->initializePackageConfiguration($package);
