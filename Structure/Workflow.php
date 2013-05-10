@@ -2,6 +2,8 @@
 
 namespace Verband\Framework\Structure;
 
+use Verband\Framework\Caching\WorkflowCache;
+
 use Verband\Framework\Util\Nomenclature;
 use Verband\Framework\Core;
 
@@ -34,11 +36,17 @@ class Workflow {
 		NODE_MOVE			= 'move',
 		NODE_SWAP			= 'swap';
 	
+	/**
+	 * A list of Workflow cache.
+	 */
+	protected $cache;
+	
+	
 	private
 		/**
 		 * @var Verband\Framework\Core
 		 */
-		$framework = null,
+		$framework = null,	
 
 		/**
 		 * @var array
@@ -64,13 +72,46 @@ class Workflow {
 	  * @return	\Framework\Context
 	  */
 	 public function gather(Package $package) {
-
 	 	$xml = $this->getXml($package);
 
 	 	if($xml->getName() == self::NODE_PACKAGE) {
 	 		return $this->handlePackageNode($xml);
 	 	} else if ($xml->getName() == self::NODE_APPLICATION) {
-	 		return $this->handleApplicationNode($xml);
+	 	    $this->cache = new WorkflowCache();
+	 	    if($this->cache->isEmpty()) {
+	 	        $result = $this->handleApplicationNode($xml);
+	 	        $contexts = array();
+
+	 	        // Build cache
+	 	        foreach($result as $context) {
+	 	            $package = $context->getParent();
+	 	            $packageName = null;
+
+	 	            if($package !== null) {
+	 	                $packageName = $parent->getNodeName(); 
+	 	            }
+
+	 	            $contexts[] = array(
+	 	              'process' => $context->getNodeName(),
+	 	              'package' => $packageName
+	 	            );
+	 	        }
+	 	        $this->cache->setAll($contexts);
+	 	    } else {
+	 	        // Load cache
+	 	        $contexts = $this->cache->getAll();
+	 	        $result = array();
+	 	        foreach($contexts as $context) {
+	 	            $process = $context['process'];
+	 	            $package = $this->framework->getPackage($context['package']);
+	 	            if(!$package) {
+	 	                $package = null;
+	 	            }
+
+	 	            $result[] = new Context($process, $package, new $process());
+	 	        }
+	 	    }
+	 	    return $result;
 	 	}
 	 }
 	 

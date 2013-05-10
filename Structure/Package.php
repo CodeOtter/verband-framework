@@ -99,6 +99,15 @@ abstract class Package {
 	}
 
 	/**
+	 *
+	 * Enter description here ...
+	 * @param unknown_type $name
+	 */
+	public function getControllers() {
+        return $this->controllers;
+	}
+	
+	/**
 	 * 
 	 * Enter description here ...
 	 * @param unknown_type $controllerName
@@ -123,5 +132,21 @@ abstract class Package {
 	 */
 	public function setControllers($controllers) {
 		$this->controllers = $controllers;
+	}
+	
+	/**
+	 * 
+	 */
+	public function expand($cacheData) {
+	    return true;
+	}
+	
+	/**
+	 * 
+	 */
+	public function compact() {
+	   return array(
+	        'directory' => $this->directory
+       ); 
 	}
 }

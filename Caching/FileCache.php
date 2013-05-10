@@ -75,6 +75,17 @@ class FileCache extends Cache {
 	/**
 	 *
 	 * Enter description here ...
+	 * @param unknown_type $list
+	 */
+	public function setAll($list) {
+	    self::$cache[$this->accessorClass] = $list;
+	    $this->triggerRebuild();
+	    return true;
+	}
+	
+	/**
+	 *
+	 * Enter description here ...
 	 * @param unknown_type $key
 	 * @param unknown_type $value
 	 */

@@ -28,8 +28,6 @@ class Initialization implements Process {
 	 * @return	mixed
 	 */
 	public function execute(Context $context, $lastResult) {
-		// Establish caching
-		FileCache::setCacheFile($context->getState('framework')->getPath(Core::PATH_CACHE) . '/verband.cache');
 		$request = Request::createFromGlobals();
 		$context->setState('request', $request);
 		return $request;

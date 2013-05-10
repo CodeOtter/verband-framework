@@ -2,6 +2,10 @@
 
 namespace Verband\Framework;
 
+use Verband\Framework\Caching\SettingsCache;
+
+use Verband\Framework\Caching\PackageCache;
+
 require(__DIR__ . '/Structure/Autoloader.php');
 
 use Verband\Framework\Caching\PhpCache;
@@ -75,7 +79,7 @@ class Core {
 	/**
 	 * A ParameterBag of settings
 	 */
-	private $settings = array();
+	private $settings;
 
 	/**
 	 * Framework initialization.
@@ -116,6 +120,9 @@ class Core {
 			$this->autoloader = new Autoloader($this->paths[self::PATH_ROOT]);
 			$this->autoloader->setPath('Verband\Framework', $this->paths[self::PATH_PACKAGES]);
 
+			// Establish caching
+			FileCache::setCacheFile($this->paths[self::PATH_CACHE] . '/verband.cache');
+
 			// Load the Framework Package
 			$this->loadPackage('Verband\Framework',$this->paths[self::PATH_PACKAGES]);
 
@@ -128,11 +135,29 @@ class Core {
 			$settings = new Settings($this->paths[self::PATH_APPLICATION] . '/Settings/config.yml');
 			$this->settings->add($settings->getContents());
 
-			// Initialize the 3rd party packages
-			$this->loadPackages();
-
-			// Load the application package
-			$this->loadPackage('application', $this->paths[self::PATH_ROOT]);
+			$packageCache = new PackageCache($this->paths[self::PATH_CACHE] . '/packages.cache');
+			$packageCache->load();
+			if($packageCache->isEmpty()) {
+    			// Initialize the 3rd party packages
+    			$this->loadPackages();
+    
+    			// Load the application package
+    			$this->loadPackage('application', $this->paths[self::PATH_ROOT]);
+    			foreach($this->getPackages() as $package) {
+    			    $packageCache->set(get_class($package), $package->compact());
+    			}
+    			$packageCache->rebuild();
+			} else {
+			    // Load packages from cache
+			    foreach($packageCache->getAll() as $packageName => $packageData) {
+			        if($packageName != 'Verband\Framework\Startup') {
+    			        require_once($packageData['directory'] . '/Startup.php');
+    			        $package = new $packageName($packageData['directory']);
+    		            $this->setPackage($package);
+    			        $package->registerNamespaces($this->autoloader, $this->getPath(self::PATH_PACKAGES));
+			        }
+			    }
+			}
 
 			// Initialize the packages
 			$this->intializePackages();
@@ -405,10 +430,20 @@ class Core {
 	 * @return void
 	 */
 	private function intializePackages() {
-		foreach($this->packages as $package) {
-			// Load a packages settings
-			$this->initializePackageConfiguration($package);
-			$package->init($this->contexts);
-		}
+	    $settingsCache = new SettingsCache();
+	    if($settingsCache->isEmpty()) {
+	        foreach($this->packages as $package) {
+	            // Load a packages settings
+	            $this->initializePackageConfiguration($package);
+	            $package->init($this->contexts);
+	        }
+	        $settingsCache->setAll($this->settings);
+	    } else {
+	        $this->settings = $settingsCache->getAll();
+	        foreach($this->packages as $package) {
+	            // Load a packages settings
+	            $package->init($this->contexts);
+	        }
+	    }
 	}
 }
