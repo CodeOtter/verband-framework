@@ -29,7 +29,8 @@ class Validator {
 		ERROR_NOT_EMPTY				= 17,
 		ERROR_NOT_SET				= 18,
 		ERROR_ALREADY_EXISTS		= 19,
-		ERROR_UNEXPECTED_FORMAT		= 20;
+		ERROR_UNEXPECTED_FORMAT		= 20,
+		ERROR_EXCEPTION_THROWN      = 21;
 
 	protected
 		$entityName,
@@ -58,6 +59,7 @@ class Validator {
 			case self::ERROR_NOT_SET				: return 'Not set';
 			case self::ERROR_ALREADY_EXISTS			: return 'Already exists';
 			case self::ERROR_UNEXPECTED_FORMAT		: return 'Unexpected format';
+			case self::ERROR_EXCEPTION_THROWN       : return 'Exception thrown';
 			default									: return 'Unknown';
 		}
 	}
