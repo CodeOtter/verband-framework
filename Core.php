@@ -312,13 +312,26 @@ class Core {
 	 */
 	public function getConsole() {
 		$em = $this->contexts->getState('entityManager');
+
 		$cli = new \Symfony\Component\Console\Application('Doctrine Command Line Interface', \Doctrine\ORM\Version::VERSION);
 		$cli->setCatchExceptions(true);
 		$cli->setHelperSet(new \Symfony\Component\Console\Helper\HelperSet(array(
 			'db' => new \Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper($em->getConnection()),
-			'em' => new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($em)
+			'em' => new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($em),
+			'dialog' => new \Symfony\Component\Console\Helper\DialogHelper(),
 		)));
 		\Doctrine\ORM\Tools\Console\ConsoleRunner::addCommands($cli);
+
+		// Migrations
+		$cli->addCommands(array(
+			new \Doctrine\DBAL\Migrations\Tools\Console\Command\DiffCommand(),
+			new \Doctrine\DBAL\Migrations\Tools\Console\Command\ExecuteCommand(),
+			new \Doctrine\DBAL\Migrations\Tools\Console\Command\GenerateCommand(),
+			new \Doctrine\DBAL\Migrations\Tools\Console\Command\MigrateCommand(),
+			new \Doctrine\DBAL\Migrations\Tools\Console\Command\StatusCommand(),
+			new \Doctrine\DBAL\Migrations\Tools\Console\Command\VersionCommand()
+		));
+		
 		return $cli;
 	}
 	
@@ -337,6 +350,8 @@ class Core {
 	 * Enter description here ...
 	 */
 	public function runWorker() {
+		// @TODO: Create a test worker that autoloads... or just trust the damned Composer autoloader and solve all your problems you dense imbecile
+		require_once(__DIR__ . '/../../autoload.php');
 		$this->contexts->getState('entityManager')->flush();
 	}
 	

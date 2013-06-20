@@ -76,6 +76,13 @@ class Autoloader {
 	}
 
 	/**
+	 * Returns registered paths
+	 * @return array
+	 */
+	public function getPaths() {
+		return $this->paths;
+	}
+	/**
 	 * Gets the directory for a namespace based on root.
 	 * @param	string	Namespace
 	 * @return	string
@@ -127,8 +134,15 @@ class Autoloader {
 		// Default Composer
 		$parts = explode('\\', $className);
 		$parts[0] = strtolower($parts[0]);
-		$parts[1] = strtolower($parts[1]);
-		return str_replace('\\', '/', implode('/', $parts));
+		if(isset($parts[1])) {
+			// Using name spaces
+			$parts[1] = strtolower($parts[1]);
+			return str_replace('\\', '/', implode('/', $parts));
+		} else {
+			// Not using namespaces
+			return '\\' . $className;
+		}
+		
 	}
 }
 
