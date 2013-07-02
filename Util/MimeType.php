@@ -715,7 +715,11 @@ class MimeType {
 	 * @param unknown_type $fileName
 	 */
 	public static function ExtensionToType($fileName) {
-		return array_search(pathinfo($fileName, PATHINFO_EXTENSION), self::$types);
+	    $result = array_search(pathinfo(substr($fileName, strrpos($fileName, '/')), PATHINFO_EXTENSION), self::$types);
+	    if(!$result) {
+	        $result = 'text/html';
+	    }
+	    return $result;
 	}
 
 	/**

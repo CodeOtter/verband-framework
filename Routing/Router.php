@@ -44,10 +44,13 @@ class Router extends Subject {
 	 * @param unknown_type $file
 	 */
 	public function get($file) {
+
 		// Prevent unwanted traversal of the project directories
 		while(strpos($file, '..') !== false) {
 			$file = str_replace('..', '' . $file);
 		}
+
+		$file = substr($file, strlen($this->getSetting('Application[webRoot]')));
 
 		if($file == '/') {
 			$file = '/index.html';

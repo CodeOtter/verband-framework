@@ -14,9 +14,9 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ResourceResponse extends Response {
 
-	public function __construct($fileMame, $fileContents, $headers = array()) {
+	public function __construct($fileName, $fileContents, $headers = array()) {
 		parent::__construct($fileContents, 200, array_merge($headers, array(
-			'content-type'	=> MimeType::ExtensionToType($fileMame)
+			'content-type'	=> MimeType::ExtensionToType($fileName)
 		)));
 	}
 }
