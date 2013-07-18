@@ -22,6 +22,7 @@ use Verband\Framework\Structure\Workflow;
 use Verband\Framework\Structure\Autloader;
 use Verband\Framework\Exceptions\ProcessHaltException;
 use Verband\Framework\Exceptions\ApplicationHaltException;
+use Verband\Framework\Test\UnitTest;
 
 /**
  * This is the core of the Verband Framework.  This contains the autoloader, the path configuration, 
@@ -352,7 +353,8 @@ class Core {
 	public function runWorker() {
 		// @TODO: Create a test worker that autoloads... or just trust the damned Composer autoloader and solve all your problems you dense imbecile
 		require_once(__DIR__ . '/../../autoload.php');
-		$this->contexts->getState('entityManager')->flush();
+		UnitTest::setSubject($this->contexts);
+		//$this->contexts->getState('entityManager')->flush();
 	}
 	
 	/**

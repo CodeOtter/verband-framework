@@ -201,7 +201,7 @@ class Validator {
 		} else if($this->value instanceof \DateTime) {
 			$compare = $this->value->getTimestamp();
 			$datetime = new \DateTime($value);
-			$value = $$datetime->getTimestamp();
+			$value = $datetime->getTimestamp();
 		} else{
 			$this->error(self::ERROR_INVALID_TYPE);
 			return $this;
@@ -253,7 +253,7 @@ class Validator {
 		}
 		return $this;
 	}
-
+	
 	/**
 	 * 
 	 * Enter description here ...
@@ -266,9 +266,20 @@ class Validator {
 		return $this;
 	}
 	
+	/**
+	 * 
+	 * @param unknown $value
+	 * @return \Verband\Framework\Util\Validator
+	 */
 	public function is($value) {
-		if($this->value != $value) {
-			$this->error(self::ERROR_NOT_EMAIL);
+		if(is_object($value)) {
+			if($this->value !== $value) {
+				$this->error(self::ERROR_NOT_EQUALS);
+			}
+		} else {
+			if($this->value != $value) {
+				$this->error(self::ERROR_NOT_EQUALS);
+			}
 		}
 		return $this;
 	}
@@ -279,9 +290,16 @@ class Validator {
 	 * @param unknown_type $value
 	 */
 	public function isNot($value) {
-		if($this->value == $value) {
-			$this->error(self::ERROR_EQUALS);
+		if(is_object($value)) {
+			if($this->value === $value) {
+				$this->error(self::ERROR_EQUALS);
+			}
+		} else {
+			if($this->value == $value) {
+				$this->error(self::ERROR_EQUALS);
+			}	
 		}
+		
 		return $this;
 	}
 

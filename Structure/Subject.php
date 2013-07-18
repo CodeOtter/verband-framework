@@ -174,7 +174,7 @@ class Subject extends Node {
 		
 		if(!isset(self::$instances[$serviceName])) {
 			if($context === null) {
-				$context =$this->getContext();
+				$context = $this->getContext();
 			}
 
 			self::$instances[$serviceName] = new $serviceName($context);
@@ -204,14 +204,14 @@ class Subject extends Node {
 	 * Enter description here ...
 	 * @param unknown_type $name
 	 */
-	protected function getState($name) {
+	public function getState($name) {
 		return $this->context->getState($name);
 	}
 
 	/**
 	 * 
 	 */
-	protected function getEnvironment() {
+	public function getEnvironment() {
 	    return $this->context->getState('framework')->getEnvironment();
 	}
 	
@@ -231,7 +231,7 @@ class Subject extends Node {
 	 * @param unknown_type $object
 	 * @param unknown_type $method
 	 */
-	protected function getAnnotation($annotation, $object = null, $method = null) {
+	public function getAnnotation($annotation, $object = null, $method = null) {
 		if(self::$annotationReader === null) {
 			self::$annotationReader = new AnnotationReader();
 		}

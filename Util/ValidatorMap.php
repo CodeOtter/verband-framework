@@ -19,7 +19,11 @@ class ValidatorMap {
 	 *
 	 * Enter description here ...
 	 */
-	public function __construct($entityName, $service) {
+	public function __construct($service, $entityName = null) {
+		if($entityName === null) {
+			$entityName = $service->getEntityName();
+		}
+
 		$validator = new Validator($entityName);
 		$this->validator = $validator;
 		$this->service = $service;
@@ -64,14 +68,14 @@ class ValidatorMap {
    public function initialize(ParameterBag $submittedData) {
         $result = new ParameterBag();
 
-        foreach($this->mapform['fields'] as $field => $configuration) {
+        foreach($this->map['fields'] as $field => $configuration) {
            $default = $configuration['default'];
-           if(is_callback($default)) {
+           if(is_callable($default)) {
                $value = $default($this->service, $submittedData);
            } else {
                $value = $default;
            }
-           $result->set($field,  $submittedData->get($field, $configuration['default']));
+           $result->set($field,  $submittedData->get($field, $value));
         }
         return $result;
     }
@@ -89,7 +93,7 @@ class ValidatorMap {
         foreach($this->map['fields'] as $field => $configuration) {
 
         	// Validate
-        	if(is_callback($configuration['validate'])) {
+        	if(is_callable($configuration['validate'])) {
         		$value = $configuration['validate']($this->service, $entity, $submittedData);
         	} else {
         		$value = $configuration['validate'];
@@ -120,6 +124,14 @@ class ValidatorMap {
      * @return number
      */
     public function isEmpty() {
-    	return count($this->map['fields']);
+    	return count($this->map['fields']) == 0;
+    }
+
+    /**
+     * 
+     * @return \Verband\Framework\Util\Validator
+     */
+    public function getValidator() {
+    	return $this->validator;
     }
 }
