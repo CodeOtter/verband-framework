@@ -28,4 +28,12 @@ abstract class UnitTest extends \PHPUnit_Framework_TestCase
 	public function getSubject() {
 		return self::$subject;
 	}
+
+	/**
+	 * 
+	 * @param unknown $email
+	 */
+	public function login($email, $id = 1) {
+		
+	}
 }

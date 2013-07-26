@@ -29,6 +29,7 @@ class Initialization implements Process {
 	 */
 	public function execute(Context $context, $lastResult) {
 		$request = Request::createFromGlobals();
+		$request->setSession($context->getState('session'));
 		$context->setState('request', $request);
 		return $request;
 	}
