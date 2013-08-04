@@ -3,6 +3,7 @@
     "type": "verband-component",
     "description": "The Verband Framework",
     "require": {
+    	"phpunit/phpunit": "3.7.*"
     },
     "extra": {
         "package-path": "Framework"
