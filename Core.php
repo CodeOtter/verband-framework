@@ -353,7 +353,8 @@ class Core {
 	public function runWorker() {
 		// @TODO: Create a test worker that autoloads... or just trust the damned Composer autoloader and solve all your problems you dense imbecile
 		require_once(__DIR__ . '/../../autoload.php');
-		UnitTest::setSubject($this->contexts);
+		// @TODO: Make a test worker
+		UnitTest::setSubject(new Subject($this->contexts));
 		//$this->contexts->getState('entityManager')->flush();
 	}
 	
