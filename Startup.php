@@ -3,6 +3,7 @@
 namespace Verband\Framework;
 
 use Verband\Framework\Structure\Package;
+use Symfony\Component\Console\Input\ArgvInput;
 
 /**
  * 
@@ -12,9 +13,18 @@ use Verband\Framework\Structure\Package;
 class Startup extends Package {
 
 	/**
-	 * 
+	 * Load CLI arguments to override settings
 	 */
 	public function init($contexts) {
+	    $input = new ArgvInput();
+
+	    $environment = $input->getParameterOption('--env');
+
+        if($environment) {
+            $contexts->getState('framework')->setEnvironment($environment);
+        }
+
+	    $contexts->setState('arguments', $input);     
 	}
 	
 	/**

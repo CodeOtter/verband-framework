@@ -13,4 +13,5 @@ class FunctionalTest extends \PHPUnit_Framework_TestCase
 {
     use VerbandTestTrait;
 
+    private static $subject;
 }

@@ -2,27 +2,31 @@
 
 namespace Verband\Framework;
 
-use Verband\Framework\Caching\SettingsCache;
+use Verband\Framework\Test\DbTest;
 
-use Verband\Framework\Caching\PackageCache;
+use Verband\Framework\Test\FunctionalTest;
+
+use Verband\Framework\Test\UnitTest;
 
 require(__DIR__ . '/Structure/Autoloader.php');
 
-use Verband\Framework\Caching\PhpCache;
-use Symfony\Component\HttpFoundation\ResourceResponse;
-use Symfony\Component\HttpFoundation\ParameterBag;
-use Verband\Framework\Caching\FileCache;
-use Verband\Framework\Process\Initialization;
 use Verband\Framework\Structure\Autoloader;
 use Verband\Framework\Structure\Context;
 use Verband\Framework\Structure\Process;
 use Verband\Framework\Structure\Package;
 use Verband\Framework\Structure\Settings;
 use Verband\Framework\Structure\Workflow;
-use Verband\Framework\Structure\Autloader;
+use Verband\Framework\Structure\Subject;
 use Verband\Framework\Exceptions\ProcessHaltException;
 use Verband\Framework\Exceptions\ApplicationHaltException;
-use Verband\Framework\Test\UnitTest;
+use Verband\Framework\Process\Initialization;
+use Verband\Framework\Caching\PhpCache;
+use Verband\Framework\Caching\SettingsCache;
+use Verband\Framework\Caching\PackageCache;
+use Verband\Framework\Caching\FileCache;
+use Symfony\Component\HttpFoundation\ResourceResponse;
+use Symfony\Component\HttpFoundation\ParameterBag;
+use Verband\Framework\Test\VerbandTestTrait;
 
 /**
  * This is the core of the Verband Framework.  This contains the autoloader, the path configuration, 
@@ -86,12 +90,14 @@ class Core {
 	 * Framework initialization.
 	 * @return	void
 	 */
-	public function init() {
+	public function init($environment = null) {
 		try {
 			$self = $this;
 			// Set the environment
 			if(isset($_SERVER['ENVIRONMENT'])) {
 				$this->environment = $_SERVER['ENVIRONMENT'];
+			} elseif($environment !== null) {
+			    $this->environment = $enviornment;
 			}
 
 			// Set the error handler
@@ -120,7 +126,7 @@ class Core {
 			// Initialize the autoloader
 			$this->autoloader = new Autoloader($this->paths[self::PATH_ROOT]);
 			$this->autoloader->setPath('Verband\Framework', $this->paths[self::PATH_PACKAGES]);
-
+		
 			// Establish caching
 			FileCache::setCacheFile($this->paths[self::PATH_CACHE] . '/verband.cache');
 
@@ -251,6 +257,14 @@ class Core {
 	}
 
 	/**
+	 *
+	 */
+	public function setEnvironment($environment) {
+	    $this->environment = $environment;
+	    return $this;
+	}
+	
+	/**
 	 * 
 	 * Enter description here ...
 	 */
@@ -341,8 +355,7 @@ class Core {
 	 */
 	public function runConsole() {
 		set_time_limit(0);
-		$input = new \Symfony\Component\Console\Input\ArgvInput();
-		$this->getConsole()->run($input);
+		$this->getConsole()->run($this->contexts->getState('arguments'));
 		$this->contexts->getState('entityManager')->flush();
 	}
 
@@ -353,8 +366,15 @@ class Core {
 	public function runWorker() {
 		// @TODO: Create a test worker that autoloads... or just trust the damned Composer autoloader and solve all your problems you dense imbecile
 		require_once(__DIR__ . '/../../autoload.php');
+
 		// @TODO: Make a test worker
-		UnitTest::setSubject(new Subject($this->contexts));
+		if($this->environment == self::ENVIRONMENT_TEST) {
+		    $subject = new Subject($this->contexts);
+    		UnitTest::setSubject($subject);
+    		FunctionalTest::setSubject($subject);
+    		DbTest::setSubject($subject);
+    		// @TODO: Deal with fixtures here
+		}
 		//$this->contexts->getState('entityManager')->flush();
 	}
 	
