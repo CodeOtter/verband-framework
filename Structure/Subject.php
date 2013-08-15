@@ -63,7 +63,7 @@ class Subject extends Node {
 	* Returns the Entity Manager
 	* @return	EntityManager
 	*/
-	protected function getEntityManager($name = null) {
+	public function getEntityManager($name = null) {
 		return $this->context->getState('entityManager');
 	}
 
@@ -71,7 +71,7 @@ class Subject extends Node {
 	 * 
 	 * Enter description here ...
 	 */
-	protected function getFramework() {
+	public function getFramework() {
 		return $this->context->getState('framework');
 	}
 
@@ -79,7 +79,7 @@ class Subject extends Node {
 	 * 
 	 * Enter description here ...
 	 */
-	protected function getRootPath() {
+	public function getRootPath() {
 		return $this->getFramework()->getPath(Core::PATH_ROOT);
 	}
 
@@ -87,7 +87,7 @@ class Subject extends Node {
 	 * 
 	 * Enter description here ...
 	 */
-	protected function getApplicationPath() {
+	public function getApplicationPath() {
 		return $this->getFramework()->getPath(Core::PATH_APPLICATION);
 	}
 
@@ -95,11 +95,11 @@ class Subject extends Node {
 	 * 
 	 * Enter description here ...
 	 */
-	protected function getPackagesPath() {
+	public function getPackagesPath() {
 		return $this->getFramework()->getPath(Core::PATH_PACKAGES);
 	}
 
-	protected function getSetting($path, $default = null, $deep = true) {
+	public function getSetting($path, $default = null, $deep = true) {
 		return $this->getFramework()->getSetting($path, $default, $deep);
 	}
 	
@@ -107,7 +107,7 @@ class Subject extends Node {
 	 * 
 	 * Enter description here ...
 	 */
-	protected function getLogPath() {
+	public function getLogPath() {
 		return $this->getFramework()->getPath(Core::PATH_LOG);
 	}
 
@@ -115,14 +115,14 @@ class Subject extends Node {
 	 * 
 	 * Enter description here ...
 	 */
-	protected function getCachePath() {
+	public function getCachePath() {
 		return $this->getFramework()->getPath(Core::PATH_CACHE);
 	}
 
 	/**
 	 *
 	 */
-	protected function getSession() {
+	public function getSession() {
 		return $this->getContext()->getState('session');
 	}
 
@@ -131,7 +131,7 @@ class Subject extends Node {
 	 * Enter description here ...
 	 * @param unknown_type $packageName
 	 */
-	protected function getPackage($packageName = null) {
+	public function getPackage($packageName = null) {
 	    if($packageName === null) {
 	        $packageName = strtolower(Nomenclature::getVendorAndPackage($this));
 	    }
@@ -144,7 +144,7 @@ class Subject extends Node {
 	 * Enter description here ...
 	 * @param unknown_type $packageName
 	 */
-	protected function getController($controllerName) {
+	public function getController($controllerName) {
 		if(!isset(self::$instances[$controllerName])) {
 		    $package = $this->getPackage(Nomenclature::getVendorAndPackage($controllerName));
 		    if(!$package) {
@@ -221,7 +221,7 @@ class Subject extends Node {
 	 * @param unknown_type $name
 	 * @param unknown_type $value
 	 */
-	protected function setState($name, $value) {
+	public function setState($name, $value) {
 		return $this->context->setState($name, $value);
 	}
 
@@ -265,7 +265,7 @@ class Subject extends Node {
 	 * @param unknown_type $fileName
 	 * @throws \Exception
 	 */
-	protected function getPublicAsset($fileName, $parameters = array()) {
+	public function getPublicAsset($fileName, $parameters = array()) {
 	    $filePath = $this->getPackage()->getDirectory() . '/Public/' . $fileName;
 
 		if(is_file($filePath)) {
@@ -290,7 +290,7 @@ class Subject extends Node {
 	 *
 	 * Enter description here ...
 	 */
-	protected function createEntity() {
+	public function createEntity() {
 		$entity = $this->getAnnotation('entity');
 		if($entity) {
 			return new $entity;
@@ -302,7 +302,7 @@ class Subject extends Node {
 	 *
 	 * Enter description here ...
 	 */
-	protected function getRepository($repositoryName = null) {
+	public function getRepository($repositoryName = null) {
 	    if($repositoryName === null) {
 	        $repositoryName = $this->getAnnotation('entity');
 	    }
@@ -313,7 +313,7 @@ class Subject extends Node {
 	 * Returns the Context the controller was invoked with.
 	 * @return \Framework\Context
 	 */
-	protected function getRequest() {
+	public function getRequest() {
 		return $this->context->getState('request');
 	}
 
@@ -323,7 +323,7 @@ class Subject extends Node {
 	 * @param unknown_type $exception
 	 * @param unknown_type $response
 	 */
-	protected function getErrorResponse(\Exception $exception, $errorCode = 500) {
+	public function getErrorResponse(\Exception $exception, $errorCode = 500) {
 		return new Response($exception->getMessage(), $errorCode);
 	}
 }
