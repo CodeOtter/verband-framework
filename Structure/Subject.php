@@ -306,7 +306,7 @@ class Subject extends Node {
 	    if($repositoryName === null) {
 	        $repositoryName = $this->getAnnotation('entity');
 	    }
-		return $this->getEntityManager()->getRepository($repositoryName);
+		return $this->getEntityManager()->getRepository(Nomenclature::toRepositoryName($repositoryName));
 	}
 
 	/**

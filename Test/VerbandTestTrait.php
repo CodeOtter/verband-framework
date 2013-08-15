@@ -229,8 +229,7 @@ trait VerbandTestTrait {
     /**
      * Returns a mock subject to do basic unit tests on 
      */
-    public function setApplicationState($settings = array(), $states = array(), $repositories = array(), $sessionValues = null) {
-
+    public function setApplicationState($settings = array(), $states = array(), $repositories = array(), $sessionValues = array(), $loggedInUser = null) {
         // Define framework
         $framework = $this->getMock('Verband\Framework\Core');
         foreach($settings as $name => $value) {
@@ -265,13 +264,22 @@ trait VerbandTestTrait {
         }
 
         // Define session
-        if($sessionValues !== null) {
-            $session = $this->getMock('Symfony\Component\HttpFoundation\Session\Session', array(), array(), '', false);
-            foreach($sessionValues as $name => $value) {
-                $this->should($session, 'get uses ("'.$name.'") and returns {value}', array('value' => $value));
+
+        $session = $this->getMock('Symfony\Component\HttpFoundation\Session\Session', array(), array(), '', false);
+        foreach($sessionValues as $name => $value) {
+            $this->should($session, 'get uses ("'.$name.'") and returns {value}', array('value' => $value));
+        }
+        
+        // Define logged in user
+        if($loggedInUser !== null) {
+            $repository = $entityManager->getRepository("CodeOtter\Account\Repository\AccountRepository");
+            if(!$repository) {
+                $repository = $this->getMock('CodeOtter\Account\Repository\AccountRepository',  array(), array(), '', false);
             }
-        } else {
-            $session = null;
+
+            $this->should($repository, 'getUserById uses (1) and returns {account}', array('account' => $loggedInUser));
+            $this->should($entityManager, 'getRepository uses ("CodeOtter\Account\Repository\AccountRepository") and returns {repository}', array('repository' => $repository));
+            $this->should($session, 'get uses ("accountId") and returns 1');
         }
 
         // Define Context

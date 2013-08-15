@@ -50,7 +50,7 @@ class MockMap {
         }
 
         if(!$found) {
-            throw new \Exception('Cannot find argument combination in the MockMap.');
+            throw new \Exception('Cannot find argument combination in the MockMap: ' . implode(', ', $values));
         }
 
         return $element['result'];
