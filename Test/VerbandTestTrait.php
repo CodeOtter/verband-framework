@@ -42,7 +42,7 @@ trait VerbandTestTrait {
     public function getSubject() {
         return self::$subject;
     }
-    
+
     /**
      *
      * @param unknown_type $mock

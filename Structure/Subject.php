@@ -171,15 +171,12 @@ class Subject extends Node {
 		if($serviceName === null) {
 			$serviceName = Nomenclature::toServiceName($this->getAnnotation('entity'));
 		}
-		
-		if(!isset(self::$instances[$serviceName])) {
-			if($context === null) {
-				$context = $this->getContext();
-			}
 
-			self::$instances[$serviceName] = new $serviceName($context);
+		if($context === null) {
+		    $context = $this->getContext();
 		}
-		return self::$instances[$serviceName];
+		
+		return new $serviceName($context);
 	}
 
 	/**

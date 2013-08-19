@@ -92,8 +92,8 @@ class Validator {
 	 * Enter description here ...
 	 */
 	public function isBetween($start, $end) {
-		$this->isGreaterThan($start);
-		$this->isLessThan($end);
+		$this->isGreaterThanOrEqualTo($start);
+		$this->isLessThanOrEqualTo($end);
 		return $this;
 	}
 
@@ -215,11 +215,39 @@ class Validator {
 	}
 
 	/**
+	 *
+	 * Enter description here ...
+	 * @param unknown_type $value
+	 */
+	public function isGreaterThanOrEqualTo($value) {
+	    if(is_numeric($this->value)) {
+	        $compare = $this->value;
+	    } else if(is_string($this->value)) {
+	        $compare = strlen($this->value);
+	    } else if(is_array($this->value)) {
+	        $compare = count($this->value);
+	    } else if($this->value instanceof \DateTime) {
+	        $compare = $this->value->getTimestamp();
+	        $datetime = new \DateTime($value);
+	        $value = $datetime->getTimestamp();
+	    } else{
+	        $this->error(self::ERROR_INVALID_TYPE);
+	        return $this;
+	    }
+
+	    if(!($compare >= $value)) {
+	        $this->error(self::ERROR_TOO_SMALL);
+	    }
+	
+	    return $this;
+	}
+	
+	/**
 	 * 
 	 * Enter description here ...
 	 * @param unknown_type $value
 	 */
-	public function isLessThan($value) {
+	public function isLessThanOrEqualTo($value) {
 		if(is_numeric($value)) {
 			$compare = $this->value;
 		} else if(is_string($value)) {
@@ -235,11 +263,39 @@ class Validator {
 			return $this;
 		}
 
-		if($compare > $value) {
+		if(!($compare <= $value)) {
 			$this->error(self::ERROR_TOO_LARGE);
 		}
 
 		return $this;
+	}
+	
+	/**
+	 *
+	 * Enter description here ...
+	 * @param unknown_type $value
+	 */
+	public function isLessThan($value) {
+	    if(is_numeric($value)) {
+	        $compare = $this->value;
+	    } else if(is_string($value)) {
+	        $compare = strlen($this->value);
+	    } else if(is_array($value)) {
+	        $compare = count($this->value);
+	    } else if($value instanceof \DateTime) {
+	        $compare = $this->value->getTimestamp();
+	        $datetime = new \DateTime($value);
+	        $value = $$datetime->getTimestamp();
+	    } else {
+	        $this->error(self::ERROR_INVALID_TYPE);
+	        return $this;
+	    }
+	
+	    if($compare > $value) {
+	        $this->error(self::ERROR_TOO_LARGE);
+	    }
+	
+	    return $this;
 	}
 
 	/**
