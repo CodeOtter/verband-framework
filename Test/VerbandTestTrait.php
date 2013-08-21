@@ -252,7 +252,7 @@ trait VerbandTestTrait {
         foreach($repositories as $name => $settings) {
             $repository  = $this->getMock($name,  array(), array(), '', false);
             foreach($settings as $method => $parameters) {
-                if(isset($parameters['arguments'])) {
+                if(isset($parameters['arguments']) && $parameters['arguments']) {
                     $arguments = array();
                     $newParameters = array();
                     foreach($parameters['arguments'] as $index => $argument) {
@@ -269,7 +269,7 @@ trait VerbandTestTrait {
             }
             $this->should($entityManager, 'getRepository uses ("'.$name.'") and returns {repository}', array('repository' => $repository));
         }
-
+       
         // Define session
 
         $session = $this->getMock('Symfony\Component\HttpFoundation\Session\Session', array(), array(), '', false);
