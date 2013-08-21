@@ -2,6 +2,8 @@
 
 namespace Verband\Framework\Test;
 
+use BotBot\Application\Entity\Contract;
+
 use Verband\Framework\Structure\Context;
 use Verband\Framework\Structure\Subject;
 
@@ -240,11 +242,12 @@ trait VerbandTestTrait {
         }
 
         // Define Entity Manager
-        $entityManager  = $this->getMock('\Doctrine\ORM\EntityManager',  array('getRepository', 'getClassMetadata', 'persist', 'flush'), array(), '', false);
+        $entityManager  = $this->getMock('\Doctrine\ORM\EntityManager',  array(), array(), '', false);
         $this->should($entityManager, 'getClassMetadata returns {value}', array('value' => (object)array('name' => 'aClass')));
+        $this->should($entityManager, 'remove uses (*) and returns null');
         $this->should($entityManager, 'persist uses (*) and returns null');
         $this->should($entityManager, 'flush returns null');
-
+        
         // Define respostitories
         foreach($repositories as $name => $settings) {
             $repository  = $this->getMock($name,  array(), array(), '', false);

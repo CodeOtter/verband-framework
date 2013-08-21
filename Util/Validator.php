@@ -340,6 +340,13 @@ class Validator {
 		return $this;
 	}
 
+	public function isTrue($boolean) {
+	    if(!$boolean) {
+            $this->error(self::ERROR_NOT_EQUALS);
+	    }
+	    return $this;
+	}
+	
 	/**
 	 *
 	 * Enter description here ...
