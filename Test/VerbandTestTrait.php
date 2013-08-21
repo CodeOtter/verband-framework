@@ -22,19 +22,19 @@ use Verband\Framework\Structure\Subject;
  * $this->should($someObject, 'customMethod throws \Exception');
  * $this->should($someObject, 'customMethod uses (>0, %something%, *)');
  * $this->should($someObject, 'customMethod returns {object}', array('object' => new \StdClass));
- * 
+ *
  */
 trait VerbandTestTrait {
 
     private $mockMaps = array();
-   
+     
     /**
-     * 
+     *
      * @param Context $contexts
      */
     public static function setSubject(Subject $subject) {
         self::$subject = $subject;
-    } 
+    }
 
     /**
      * @return
@@ -59,18 +59,18 @@ trait VerbandTestTrait {
         if(isset($matches[3]) && $matches[3] != '' && $matches[3][0] == '[') {
             // Dealing with consecutive checks
             $ats = array_map('trim', str_getcsv(substr($matches[3], 1, strlen($matches[3]) - 2)));
-    
+
             if(isset($matches[6]) && $matches[6][0] == '[') {
                 $values = array_map('trim', str_getcsv(substr($matches[6], 1, strlen($matches[6]) - 2)));
             } else {
                 $values = array();
             }
-    
+
             foreach($ats as $at => $argument) {
                 $expects = $mock->expects($this->at($at));
                 $method = $expects->method($matches[1]);
                 $method = $this->finish($methodIndex, $method, 'uses', '(' . $argument . ')', $parameters);
-    
+
                 if(isset($values[$at])) {
                     $this->finish($methodIndex, $method, 'returns', $values[$at], $parameters);
                 }
@@ -95,16 +95,16 @@ trait VerbandTestTrait {
         }
 
         $method = $expects->method($matches[1]);
-    
+
         if(isset($matches[2]) && $matches[2] != '') {
             $method = $this->finish($methodIndex, $method, $matches[2], $matches[3], $parameters);
         }
-    
+
         if(isset($matches[5]) && $matches[5] != '') {
             $this->finish($methodIndex, $method, $matches[5], $matches[6], $parameters);
         }
     }
-    
+
     /**
      *
      * @param unknown_type $value
@@ -182,16 +182,19 @@ trait VerbandTestTrait {
             if($value[0] == '[') {
                 $method = $mockMap->with($method);
                 return $method->will(
-                    call_user_func_array(
-                        array($this, 'onConsecutiveCalls'),
-                        array_map(array($this, 'extract'), array_map('trim', str_getcsv(substr($value, 1, strlen($value) - 2))))
-                    ));
+                        call_user_func_array(
+                                array($this, 'onConsecutiveCalls'),
+                                array_map(array($this, 'extract'), array_map('trim', str_getcsv(substr($value, 1, strlen($value) - 2))))
+                        ));
             } elseif(preg_match('/the ([0-9]+)[a-z]{2} argument/', $value, $matches)) {
                 $method = $mockMap->with($method);
                 return $method->will($this->returnArgument($matches[1] - 1));
             } elseif(preg_match('/the result of ([a-zA-Z0-9_]+)/', $value, $matches)) {
                 $method = $mockMap->with($method);
                 return $method->will($this->returnCallback($matches[1]));
+            } elseif($mockMap->useConstraints()) {
+                $method = $mockMap->with($method);
+                return $method->will($this->returnArgument($this->extract($value)));
             } elseif($value[0] == '{') {
                 $mockMap->addResult($parameters[substr($value, 1, strlen($value) - 2)]);
                 return $method->will($this->returnCallback(array($mockMap, 'callback')));
@@ -203,7 +206,7 @@ trait VerbandTestTrait {
     }
 
     /**
-     * 
+     *
      * @param unknown_type $methodName
      * @return multitype:
      */
@@ -227,7 +230,7 @@ trait VerbandTestTrait {
     }
 
     /**
-     * Returns a mock subject to do basic unit tests on 
+     * Returns a mock subject to do basic unit tests on
      */
     public function setApplicationState($settings = array(), $states = array(), $repositories = array(), $sessionValues = array(), $loggedInUser = null) {
         // Define framework
@@ -239,7 +242,7 @@ trait VerbandTestTrait {
         // Define Entity Manager
         $entityManager  = $this->getMock('\Doctrine\ORM\EntityManager',  array('getRepository', 'getClassMetadata', 'persist', 'flush'), array(), '', false);
         $this->should($entityManager, 'getClassMetadata returns {value}', array('value' => (object)array('name' => 'aClass')));
-        $this->should($entityManager, 'persist returns null');
+        $this->should($entityManager, 'persist uses (*) and returns null');
         $this->should($entityManager, 'flush returns null');
 
         // Define respostitories
@@ -247,15 +250,16 @@ trait VerbandTestTrait {
             $repository  = $this->getMock($name,  array(), array(), '', false);
             foreach($settings as $method => $parameters) {
                 if(isset($parameters['arguments'])) {
-                    $arguments = '';
-                    array_walk($parameters['arguments'], function($element) use(&$arguments) {
-                        if(is_string($element)) {
-                            $arguments[] = '"' . $element . '"'; 
-                        } else {
-                            $arguments[] = $element;
-                        }
-                    });
-                    $this->should($repository, $method . ' uses ('.implode(',', $arguments).') and returns {return}', $parameters);
+                    $arguments = array();
+                    $newParameters = array();
+                    foreach($parameters['arguments'] as $index => $argument) {
+                        $nexIndex = ':' . $index;
+                        $arguments[] = '{' . $nexIndex. '}';
+                        $newParameters[$nexIndex] = $argument;
+                    }
+                    $newParameters['return'] = $parameters['return'];
+
+                    $this->should($repository, $method . ' uses ('.implode(',', $arguments).') and returns {return}', $newParameters);
                 } else {
                     $this->should($repository, $method . ' returns {return}', $parameters);
                 }
@@ -269,11 +273,12 @@ trait VerbandTestTrait {
         foreach($sessionValues as $name => $value) {
             $this->should($session, 'get uses ("'.$name.'") and returns {value}', array('value' => $value));
         }
-        
+
         // Define logged in user
         if($loggedInUser !== null) {
-            $repository = $entityManager->getRepository("CodeOtter\Account\Repository\AccountRepository");
-            if(!$repository) {
+            try {
+                $repository = $entityManager->getRepository("CodeOtter\Account\Repository\AccountRepository");
+            } catch(\Exception $exception) {
                 $repository = $this->getMock('CodeOtter\Account\Repository\AccountRepository',  array(), array(), '', false);
             }
 
@@ -284,13 +289,14 @@ trait VerbandTestTrait {
 
         // Define Context
         $context = $this->getMock('Verband\Framework\Structure\Context', array(), array(), '', false);
-        $this->should($context, 'getState uses ("framework") and returns {framework}',     array('framework' => $framework));
+        $this->should($context, 'getState uses ("framework") and returns {framework}',         array('framework' => $framework));
         $this->should($context, 'getState uses ("entityManager") and returns {entityManager}', array('entityManager' => $entityManager));
-        $this->should($context, 'getState uses ("session") and returns {session}',       array('session' => $session));
+        $this->should($context, 'getState uses ("session") and returns {session}',             array('session' => $session));
+
         foreach($states as $name => $value) {
-            $this->should($context, 'getState uses ("'.$name.'") and returns {value}', array('value' => $value));
-        }     
-        
+            $this->should($context, 'getState uses ("'.$name.'") and returns {value}',         array('value' => $value));
+        }
+
         self::$subject = new Subject($context);
     }
 }

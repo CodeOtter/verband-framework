@@ -7,6 +7,7 @@ class MockMap {
     
     
     private $map = array();
+    private $useContraints = false;
 
     
     public function __construct() {
@@ -18,11 +19,16 @@ class MockMap {
      * @param unknown_type $arguments
      * @param unknown_type $result
      */
-    public function add($originals, $constraints) {
+    public function add($constraints, $originals) {
+        foreach($constraints as $constraint) {
+            if(get_class($constraint) != 'PHPUnit_Framework_Constraint_IsEqual') {
+                $this->useContraints = true;
+            }
+        }
         // @TODO: Do raw analysis of values here
         $this->map[] = [
-            'constraints' => $originals,
-            'originals'   => $constraints,
+            'constraints' => $constraints,
+            'originals'   => $originals,
             'result'      => null
         ];
     }
@@ -36,21 +42,24 @@ class MockMap {
     private function find($values) {
         $found = false;
         foreach($this->map as $element) {
-            foreach($values as $index => $value) {
-                if($value !== $element['originals'][$index]) {
-                    break;
-                }
+            if(!$values && !$element['originals']) {
                 $found = true;
-                break;
+            } else {
+                foreach($values as $index => $value) {
+                    if($value !== $element['originals'][$index]) {
+                        break;
+                    }
+                    $found = true;
+                    break;
+                }   
             }
-
             if($found) {
                 break;
             }
         }
 
         if(!$found) {
-            throw new \Exception('Cannot find argument combination in the MockMap: ' . implode(', ', $values));
+            throw new \Exception('Cannot find argument combination in the MockMap: ' . print_r($values, true));
         }
 
         return $element['result'];
@@ -61,7 +70,14 @@ class MockMap {
      * @param unknown_type $result
      */
     public function addResult($result) {
-        $this->map[count($this->map) - 1]['result'] = $result;
+        $index = count($this->map) - 1;
+        if(!isset($this->map[$index])) {
+            $this->map[$index] = array(
+                'constraints' => array(),
+                'originals'   => array(),
+            );
+        }
+        $this->map[$index]['result'] = $result;
     }
 
     /**
@@ -71,6 +87,14 @@ class MockMap {
         return array_pop($this->map)['constraints'];
     }
 
+    /**
+     * 
+     * @return boolean
+     */
+    public function useConstraints() {
+        return $this->useContraints;
+    }
+    
     /**
      * 
      * @param unknown_type $method
