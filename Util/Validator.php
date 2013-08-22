@@ -482,7 +482,11 @@ class Validator {
 	 * Enter description here ...
 	 */
 	public function asDatetime() {
-		$this->value = new \DateTime($this->value);
+	    if(strtotime($this->value) === false) {
+	        $this->error(self::ERROR_NOT_DATE);
+	    } else {
+		    $this->value = new \DateTime($this->value);
+	    }
 		return $this;
 	}
 
@@ -491,7 +495,11 @@ class Validator {
 	* Enter description here ...
 	*/
 	public function asTimestamp() {
-		$this->value = new \DateTime('@' . $this->value);
+	    if(strtotime($this->value) === false) {
+	        $this->error(self::ERROR_NOT_DATE);
+	    } else {
+            $this->value = new \DateTime('@' . $this->value);
+	    }
 		return $this;
 	}
 	
