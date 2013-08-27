@@ -243,7 +243,7 @@ trait VerbandTestTrait {
 
         // Define Entity Manager
         $entityManager  = $this->getMock('\Doctrine\ORM\EntityManager',  array(), array(), '', false);
-        $this->should($entityManager, 'getClassMetadata returns {value}', array('value' => (object)array('name' => 'aClass')));
+        //$this->should($entityManager, 'getClassMetadata uses (*) returns {value}', array('value' => (object)array()));
         $this->should($entityManager, 'remove uses (*) and returns null');
         $this->should($entityManager, 'persist uses (*) and returns null');
         $this->should($entityManager, 'flush returns null');

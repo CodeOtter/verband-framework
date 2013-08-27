@@ -148,19 +148,23 @@ class Subject extends Node {
 		if(!isset(self::$instances[$controllerName])) {
 		    $package = $this->getPackage(Nomenclature::getVendorAndPackage($controllerName));
 		    if(!$package) {
-		        return false;
+		        $controller = new $controllerName();
+		        $controller->setContext($this->getContext());
+		        return $controller;
+		        //return false;
 		    }
 
-		    if(!$package->controllerExists($controllerName)) {
+		    if(!$package || !$package->controllerExists($controllerName)) {
 		        $controller = new $controllerName();
 		        $controller->setContext($this->getContext());
 		        $package->addController($controller);
 		    } else {
 		        $controller = $package->getController($controllerName);
 		    }
-			self::$instances[$controllerName] = $controller; 
+			//self::$instances[$controllerName] = $controller; 
 		}
-		return self::$instances[$controllerName];
+		return $controller;
+		//return self::$instances[$controllerName];
 	}
 
 	/**
