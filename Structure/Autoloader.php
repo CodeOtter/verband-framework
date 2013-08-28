@@ -88,6 +88,7 @@ class Autoloader {
 	 * @return	string
 	 */
 	public function findFileByClassname($className) {
+
 		foreach($this->paths as $index => $path) {
 			$prefix = substr($className, 0, strlen($index));
 			if($prefix == $index || strtolower($prefix) == strtolower($index)) {

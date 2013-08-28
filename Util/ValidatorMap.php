@@ -99,12 +99,14 @@ class ValidatorMap {
         		$value = $configuration['validate'];
         	}
 
-        	// Assignment
-        	if(is_callable($configuration['update'])) {
-       			$entity = $configuration['update']($this->service, $entity, $value);
-       		} else {
-       			$entity->{'set'.$field}($value);
-       		}
+        	if($this->isValid($field)) {
+            	// Assignment
+            	if(is_callable($configuration['update'])) {
+           			$entity = $configuration['update']($this->service, $entity, $value);
+           		} else {
+           			$entity->{'set'.$field}($value);
+           		}
+        	}
         }
 
         return $entity;
