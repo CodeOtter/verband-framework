@@ -252,19 +252,21 @@ trait VerbandTestTrait {
         foreach($repositories as $name => $settings) {
             $repository  = $this->getMock($name,  array(), array(), '', false);
             foreach($settings as $method => $parameters) {
-                if(isset($parameters['arguments']) && $parameters['arguments']) {
-                    $arguments = array();
-                    $newParameters = array();
-                    foreach($parameters['arguments'] as $index => $argument) {
-                        $nexIndex = ':' . $index;
-                        $arguments[] = '{' . $nexIndex. '}';
-                        $newParameters[$nexIndex] = $argument;
+                foreach($parameters as $parameter) {
+                    if(isset($parameter['arguments']) && $parameter['arguments']) {
+                        $arguments = array();
+                        $newParameters = array();
+                        foreach($parameter['arguments'] as $index => $argument) {
+                            $nexIndex = ':' . $index;
+                            $arguments[] = '{' . $nexIndex. '}';
+                            $newParameters[$nexIndex] = $argument;
+                        }
+                        $newParameters['return'] = $parameter['return'];
+    
+                        $this->should($repository, $method . ' uses ('.implode(',', $arguments).') and returns {return}', $newParameters);
+                    } else {
+                        $this->should($repository, $method . ' returns {return}', $parameter);
                     }
-                    $newParameters['return'] = $parameters['return'];
-
-                    $this->should($repository, $method . ' uses ('.implode(',', $arguments).') and returns {return}', $newParameters);
-                } else {
-                    $this->should($repository, $method . ' returns {return}', $parameters);
                 }
             }
             $this->should($entityManager, 'getRepository uses ("'.$name.'") and returns {repository}', array('repository' => $repository));

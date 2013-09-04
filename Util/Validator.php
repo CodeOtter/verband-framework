@@ -70,7 +70,7 @@ class Validator {
 	 */
 	public function __construct($entityName) {
 		if(self::$errors === null) {
-			self::$errors = array();
+			$this->clearErrors();
 		}
 		$this->entityName = $entityName;
 	}
@@ -192,7 +192,7 @@ class Validator {
 	 * @param unknown_type $value
 	 */
 	public function isGreaterThan($value) {
-		if(is_numeric($this->value)) {
+	    if(is_numeric($this->value)) {
 			$compare = $this->value;
 		} else if(is_string($this->value)) {
 			$compare = strlen($this->value);
@@ -561,6 +561,15 @@ class Validator {
 	}
 
 	/**
+	 * Returns if a value is a blank string or is null
+	 * @param unknown_type $value
+	 * @return bool
+	 */
+	public function isBlank($value) {
+	    return $value === null || $value === '';
+	}
+	
+	/**
 	 * 
 	 * Enter description here ...
 	 */
@@ -573,5 +582,12 @@ class Validator {
 	 */
 	public function getErrors() {
 	    return self::$errors;
+	}
+	
+	/**
+	 *
+	 */
+	public function clearErrors() {
+	    self::$errors = array();
 	}
 }
