@@ -16,15 +16,22 @@ class Startup extends Package {
 	 * Load CLI arguments to override settings
 	 */
 	public function init($contexts) {
-	    $input = new ArgvInput();
+	    $argv = null;
+	    if(!isset($_SERVER['argv'])) {
+	        $argv = array();
+	    }
 
-	    $environment = $input->getParameterOption('--env');
+        $input = new ArgvInput($argv);
+        
+        if($argv === null) {
+    	    $environment = $input->getParameterOption('--env');
+    
+            if($environment) {
+                $contexts->getState('framework')->setEnvironment($environment);
+            }
+	    }
 
-        if($environment) {
-            $contexts->getState('framework')->setEnvironment($environment);
-        }
-
-	    $contexts->setState('arguments', $input);     
+	    $contexts->setState('arguments', $input);
 	}
 	
 	/**
