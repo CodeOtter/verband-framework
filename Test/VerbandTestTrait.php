@@ -2,6 +2,8 @@
 
 namespace Verband\Framework\Test;
 
+use Verband\Framework\Util\Nomenclature;
+
 use BotBot\Application\Entity\Contract;
 
 use Verband\Framework\Structure\Context;
@@ -250,7 +252,7 @@ trait VerbandTestTrait {
         
         // Define respostitories
         foreach($repositories as $name => $settings) {
-            $repository  = $this->getMock($name,  array(), array(), '', false);
+            $repository  = $this->getMock(Nomenclature::toRepositoryName($name),  array(), array(), '', false);
             foreach($settings as $method => $parameters) {
                 foreach($parameters as $parameter) {
                     if(isset($parameter['arguments']) && $parameter['arguments']) {

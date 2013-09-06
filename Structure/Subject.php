@@ -161,10 +161,10 @@ class Subject extends Node {
 		    } else {
 		        $controller = $package->getController($controllerName);
 		    }
-			//self::$instances[$controllerName] = $controller; 
+		} else {
+		    $controller = self::$instances[$controllerName];
 		}
 		return $controller;
-		//return self::$instances[$controllerName];
 	}
 
 	/**
@@ -307,7 +307,7 @@ class Subject extends Node {
 	    if($repositoryName === null) {
 	        $repositoryName = $this->getAnnotation('entity');
 	    }
-		return $this->getEntityManager()->getRepository(Nomenclature::toRepositoryName($repositoryName));
+	    return $this->getEntityManager()->getRepository($repositoryName);
 	}
 
 	/**
