@@ -11,6 +11,6 @@
         "package-path": "Framework"
     },
     "autoload": {
-        "psr-0": { "Verband\\Framework\\": "" }
+        "psr-0": { "": "" }
     }
 }
