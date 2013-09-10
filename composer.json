@@ -9,5 +9,8 @@
     },
     "extra": {
         "package-path": "Framework"
+    },
+    "autoload": {
+        "psr-0": { "Verband\\Framework\\": "" }
     }
 }

@@ -53,13 +53,13 @@ abstract class Package {
 	/**
 	 * Registers custom namespaces
 	 */
-	public function registerNamespaces($autoloader, $packagesPath) {
+	/*public function registerNamespaces($autoloader, $packagesPath) {
 		foreach($this->getNamespaces($packagesPath) as $namespace => $path) {
 			$autoloader->setPath($namespace, $path);
 		}
 
 		$autoloader->setPath(Nomenclature::getVendorAndPackage($this), $packagesPath);
-	}
+	}*/
 
 	/**
 	 * 
@@ -82,9 +82,9 @@ abstract class Package {
 	 * @see Framework.Package::addNamespaces()
 	 * @return array
 	 */
-	public function getNamespaces($contexts) {
+	/*public function getNamespaces($contexts) {
 		return array();
-	}
+	}*/
 
 	/**
 	 * 

@@ -2,15 +2,10 @@
 
 namespace Verband\Framework;
 
-use Verband\Framework\Test\DbTest;
+require_once(__DIR__ . '/../../autoload.php');
+//require(__DIR__ . '/Structure/Autoloader.php');
 
-use Verband\Framework\Test\FunctionalTest;
-
-use Verband\Framework\Test\UnitTest;
-
-require(__DIR__ . '/Structure/Autoloader.php');
-
-use Verband\Framework\Structure\Autoloader;
+//use Verband\Framework\Structure\Autoloader;
 use Verband\Framework\Structure\Context;
 use Verband\Framework\Structure\Process;
 use Verband\Framework\Structure\Package;
@@ -27,6 +22,11 @@ use Verband\Framework\Caching\FileCache;
 use Symfony\Component\HttpFoundation\ResourceResponse;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Verband\Framework\Test\VerbandTestTrait;
+use Verband\Framework\Test\DbTest;
+
+use Verband\Framework\Test\FunctionalTest;
+
+use Verband\Framework\Test\UnitTest;
 
 /**
  * This is the core of the Verband Framework.  This contains the autoloader, the path configuration, 
@@ -64,7 +64,7 @@ class Core {
 	/**
 	 * The autoloader the framework uses to discover components dynamically.
 	 */
-	private $autoloader = null;
+	//private $autoloader = null;
 
 	/**
 	* The caching mechanism
@@ -109,7 +109,7 @@ class Core {
 				echo $exception->getMessage() . "\n";
 				echo $exception->getTraceAsString() . "\n";
 			});
-			
+
 			/**
 			 * Even catch fatal errors
 			 */
@@ -124,8 +124,8 @@ class Core {
 			$this->initializePaths();
 
 			// Initialize the autoloader
-			$this->autoloader = new Autoloader($this->paths[self::PATH_ROOT]);
-			$this->autoloader->setPath('Verband\Framework', $this->paths[self::PATH_PACKAGES]);
+			//$this->autoloader = new Autoloader($this->paths[self::PATH_ROOT]);
+			//$this->autoloader->setPath('Verband\Framework', $this->paths[self::PATH_PACKAGES]);
 		
 			// Establish caching
 			FileCache::setCacheFile($this->paths[self::PATH_CACHE] . '/verband.cache');
@@ -151,7 +151,7 @@ class Core {
    			        require_once($packageData['directory'] . '/Startup.php');
    			        $package = new $packageName($packageData['directory']);
    		            $this->setPackage($package);
-   			        $package->registerNamespaces($this->autoloader, $this->getPath(self::PATH_PACKAGES));
+   			        //$package->registerNamespaces(/*$this->autoloader, */$this->getPath(self::PATH_PACKAGES));
 			    }
 			}
 
@@ -229,9 +229,9 @@ class Core {
 	 * Returns the autoloader
 	 * @return \Framework\Autoloader
 	 */
-	public function getAutoloader() {
+	/*public function getAutoloader() {
 		return $this->autoloader;
-	}
+	}*/
 
 	/**
 	 * 
@@ -365,7 +365,7 @@ class Core {
 	 */
 	public function runWorker() {
 		// @TODO: Create a test worker that autoloads... or just trust the damned Composer autoloader and solve all your problems you dense imbecile
-		require_once(__DIR__ . '/../../autoload.php');
+		//require_once(__DIR__ . '/../../autoload.php');
 
 		// @TODO: Make a test worker
 		if($this->environment == self::ENVIRONMENT_TEST) {
