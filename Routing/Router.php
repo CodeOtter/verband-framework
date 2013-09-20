@@ -56,7 +56,7 @@ class Router extends Subject {
 			$file = '/index.html';
 		}
 
-		if($result = $this->getResource($this->applicationRoot . '/application/Public' . $file)) {
+		if($result = $this->getResource($this->applicationRoot . '/Application/Public' . $file)) {
 			// @TODO: Set path caching here
 			return $result;
 		}
@@ -64,8 +64,9 @@ class Router extends Subject {
 		$pathAsNamespace = substr(Nomenclature::pathToNamespace($file), 1);
 		$vendorAndPackage = strtolower(Nomenclature::getVendorAndPackage($pathAsNamespace));
 		$fileRequest = substr($file, strlen($vendorAndPackage) + 2);
-
-		$result = $this->getResource($this->applicationRoot . '/' . Core::PATH_PACKAGES . '/'. Nomenclature::toPath($vendorAndPackage) . '/Public/' . $fileRequest);
+        $packagePath = $this->applicationRoot . '/' . Core::PATH_PACKAGES . '/'. Nomenclature::toPath($vendorAndPackage);
+        $properPackageName = Nomenclature::toPath($this->getContext()->getState('framework')->findStartup($packagePath));
+		$result = $this->getResource($packagePath . '/' . $properPackageName . '/Public/' . $fileRequest);
 
 		if($result) {
 			return $result;

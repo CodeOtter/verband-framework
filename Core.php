@@ -198,7 +198,14 @@ class Core {
 	 * @return Package
 	 */
 	public function getPackage($packageName) {
-		$packageName = strtolower($packageName);
+
+	    // Creating an exception for the Application namespace
+	    if(strcasecmp(substr($packageName, 0, 12), 'Application\\') == 0) {
+	        $packageName = 'application';
+	    } else {
+	        $packageName = strtolower($packageName);
+	    }
+
 		if(isset($this->packages[$packageName])) {
 			return $this->packages[$packageName];
 		} else {
@@ -428,7 +435,7 @@ class Core {
 	 *
 	 * @param unknown_type $path
 	 */
-	private function findStartup($path) {
+	public function findStartup($path) {
 	    if(!is_dir($path)) {
 	        return false;
 	    }
