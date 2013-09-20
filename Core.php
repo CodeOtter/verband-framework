@@ -2,10 +2,6 @@
 
 namespace Verband\Framework;
 
-require_once(__DIR__ . '/../../autoload.php');
-//require(__DIR__ . '/Structure/Autoloader.php');
-
-//use Verband\Framework\Structure\Autoloader;
 use Verband\Framework\Structure\Context;
 use Verband\Framework\Structure\Process;
 use Verband\Framework\Structure\Package;
@@ -23,10 +19,9 @@ use Symfony\Component\HttpFoundation\ResourceResponse;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Verband\Framework\Test\VerbandTestTrait;
 use Verband\Framework\Test\DbTest;
-
 use Verband\Framework\Test\FunctionalTest;
-
 use Verband\Framework\Test\UnitTest;
+use Application\Startup;
 
 /**
  * This is the core of the Verband Framework.  This contains the autoloader, the path configuration, 
@@ -64,7 +59,7 @@ class Core {
 	/**
 	 * The autoloader the framework uses to discover components dynamically.
 	 */
-	//private $autoloader = null;
+	private $autoloader = null;
 
 	/**
 	* The caching mechanism
@@ -92,6 +87,8 @@ class Core {
 	 */
 	public function init($environment = null) {
 		try {
+		    $this->autoloader = require_once(__DIR__ . '/../../../../autoload.php');
+
 			$self = $this;
 			// Set the environment
 			if(isset($_SERVER['ENVIRONMENT'])) {
@@ -123,24 +120,20 @@ class Core {
 			// Initialize the path management
 			$this->initializePaths();
 
-			// Initialize the autoloader
-			//$this->autoloader = new Autoloader($this->paths[self::PATH_ROOT]);
-			//$this->autoloader->setPath('Verband\Framework', $this->paths[self::PATH_PACKAGES]);
-		
 			// Establish caching
 			FileCache::setCacheFile($this->paths[self::PATH_CACHE] . '/verband.cache');
 
 			$packageCache = new PackageCache($this->paths[self::PATH_CACHE] . '/packages.cache');
 			$packageCache->load();
-			if($packageCache->isEmpty()) {
+			if(true || $packageCache->isEmpty()) {
 			    // Load the Framework Package
-			    $this->loadPackage('Verband\Framework',$this->paths[self::PATH_PACKAGES]);
+			    $this->loadPackage('Verband\Framework');
 
     			// Initialize the 3rd party packages
     			$this->loadPackages();
     
     			// Load the application package
-    			$this->loadPackage('application', $this->paths[self::PATH_ROOT]);
+    			$this->loadPackage('Application');
     			foreach($this->getPackages() as $package) {
     			    $packageCache->set(get_class($package), $package->compact());
     			}
@@ -384,10 +377,10 @@ class Core {
 	 * @return	void
 	 */
 	private function initializePaths() {
-		$this->paths[self::PATH_ROOT]			= realpath(__DIR__ . '/../../..');
-		$this->paths[self::PATH_APPLICATION]	= $this->paths[self::PATH_ROOT] . '/application';
-		$this->paths[self::PATH_CACHE]			= $this->paths[self::PATH_ROOT] . '/application/Cache';
-		$this->paths[self::PATH_LOGS]			= $this->paths[self::PATH_ROOT] . '/application/Logs';
+		$this->paths[self::PATH_ROOT]			= realpath(__DIR__ . '/../../../../..');
+		$this->paths[self::PATH_APPLICATION]	= $this->paths[self::PATH_ROOT] . '/Application';
+		$this->paths[self::PATH_CACHE]			= $this->paths[self::PATH_ROOT] . '/Application/Cache';
+		$this->paths[self::PATH_LOGS]			= $this->paths[self::PATH_ROOT] . '/Application/Logs';
 		$this->paths[self::PATH_PACKAGES]		= $this->paths[self::PATH_ROOT] . '/packages';
 	}
 
@@ -395,19 +388,67 @@ class Core {
 	 * Loads all contexts into the framework.
 	 * @return	void
 	 */
-	private function loadPackages() {
+	private function loadPackages() {  
 		$vendors = array_diff(scandir($this->paths[self::PATH_PACKAGES]), array('..', '.'));
-
 		foreach($vendors as $vendor) {
 			if(is_dir($this->paths[self::PATH_PACKAGES] . '/' . $vendor)) {
 				$packages = array_diff(scandir($this->paths[self::PATH_PACKAGES] . '/' . $vendor), array('..', '.'));
 				foreach($packages as $package) {
-					if(is_dir($this->paths[self::PATH_PACKAGES] . '/' . $vendor . '/' . $package)) {
-						$this->loadPackage($vendor.'\\'.$package, $this->paths[self::PATH_PACKAGES]);
-					}
+				    $startupName = $this->findStartup($this->paths[self::PATH_PACKAGES] . '/' . $vendor . '/' . $package);
+				    if($startupName != 'Verband\Framework') {
+                        $this->loadPackage($startupName);
+				    }
 				}
 			}
 		}
+	}
+
+	/**
+	 * Loads a context into the framework.
+	 * @param $packageName
+	 */
+	private function loadPackage($name) {
+
+	    if(!$name) {
+	        return false;
+	    }
+
+	    $name .= '\Startup';
+
+        $startup = new $name();
+
+        if($startup instanceof Package) {
+            $this->setPackage($startup);
+            return true;
+        }
+        return false;
+	}
+	
+	/**
+	 *
+	 * @param unknown_type $path
+	 */
+	private function findStartup($path) {
+	    if(!is_dir($path)) {
+	        return false;
+	    }
+
+	    $results = array_diff(scandir($path), array('..', '.'));
+	    $namespace = array();
+	
+	    if(count($results) == 1 && is_dir($path . '/' . current($results))) {
+	        $namespace[0] = current($results);
+	        $results = array_diff(scandir($path . '/' . $namespace[0]), array('..', '.'));
+	        if(count($results) == 1 && is_dir($path . '/' . $namespace[0] . '/' . current($results))) {
+	            $namespace[1] = current($results);
+	        }
+	    }
+
+	    if($namespace && is_file($path . '/' . implode('/', $namespace) . '/' . 'Startup.php')) {
+            return implode('\\', $namespace);
+	    }
+
+	    return false;
 	}
 
 	/**
@@ -419,28 +460,6 @@ class Core {
 	public function setPackage($package) {
 		$this->packages[strtolower($package->getName())] = $package;
 		return $this;
-	}
-
-	/**
-	 * Loads a context into the framework.
-	 * @param $packageName
-	 */
-	private function loadPackage($name, $pathPrefix) {
-		$name = strtolower($name);
-		$path = $pathPrefix . '/' . str_replace('\\', '/', $name);
-		if(file_exists($path . '/Startup.php')) {
-			require_once($path . '/Startup.php');
-			//$this->autoloader->setPath($name, $this->getPath(self::PATH_PACKAGES));
-			$packageName = '\\' . $name . '\Startup';
-			$package = new $packageName($path);
-
-			if($package instanceof Package) {
-				$this->setPackage($package);
-				$package->registerNamespaces($this->autoloader, $this->getPath(self::PATH_PACKAGES));
-				return $package;
-			}
-		}
-		return null;
 	}
 
 	/**

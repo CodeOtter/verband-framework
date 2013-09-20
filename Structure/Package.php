@@ -23,9 +23,10 @@ abstract class Package {
 	 * Constructor
 	 * @param	string	Directory of the package
 	 */
-	public function __construct($directory) {
-		$this->directory = $directory;
+	public function __construct() {
 		$this->controllers = array();
+		$reflector = new \ReflectionClass(get_class($this));
+		$this->directory = dirname($reflector->getFileName());
 	}
 	
 	/**
@@ -48,6 +49,15 @@ abstract class Package {
 	 */
 	public function getDirectory() {
 		return $this->directory;
+	}
+	
+	/**
+	 * Returns the directory of the package.
+	 * @return	string
+	 */
+	public function setDirectory($directory) {
+	    $this->directory = $directory;
+	    return $this;
 	}
 	
 	/**
