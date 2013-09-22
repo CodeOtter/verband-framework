@@ -229,9 +229,9 @@ class Core {
 	 * Returns the autoloader
 	 * @return \Framework\Autoloader
 	 */
-	/*public function getAutoloader() {
+	public function getAutoloader() {
 		return $this->autoloader;
-	}*/
+	}
 
 	/**
 	 * 

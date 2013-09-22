@@ -39,10 +39,10 @@ class Startup extends Package {
 	 * @see Framework.Package::getNamespaces()
 	 * @return array
 	 */
-	public function getNamespaces($packagesPath) {
+	/*public function getNamespaces($packagesPath) {
 		return array(
 			'Symfony\Component\HttpFoundation' => $packagesPath . '/{first.lc}/http-foundation/{first}/Component/{>1}',
 			'Symfony\Component' => $packagesPath . '/{first.lc}/{2.lc}/{first}/Component/{>1}'
 		);
-	}
+	}*/
 }

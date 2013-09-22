@@ -60,7 +60,7 @@ class Router extends Subject {
 			// @TODO: Set path caching here
 			return $result;
 		}
-
+		
 		$pathAsNamespace = substr(Nomenclature::pathToNamespace($file), 1);
 		$vendorAndPackage = strtolower(Nomenclature::getVendorAndPackage($pathAsNamespace));
 		$fileRequest = substr($file, strlen($vendorAndPackage) + 2);
